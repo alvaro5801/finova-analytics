@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Top-row stat cards: Today's Money, Today's Users, New Clients, Sales
+model StatCard {
+  id           Int    @id @default(autoincrement())
+  key          String @unique
+  title        String
+  value        String
+  changePct    Float
+  changeLabel  String
+  icon         String
+  color        String
+  order        Int    @default(0)
+}
+
+// Sales overview gradient line chart, monthly revenue
+model SalesPoint {
+  id        Int    @id @default(autoincrement())
+  month     String
+  value     Int
+  secondary Int    @default(0)
+  order     Int    @default(0)
+}
+
+// Active users weekly bar chart
+model ActiveUsersPoint {
+  id    Int    @id @default(autoincrement())
+  day   String
+  value Int
+  order Int    @default(0)
+}
+
+// Small stat chips shown above the Active Users chart
+model ActiveUsersStat {
+  id    Int    @id @default(autoincrement())
+  label String
+  value String
+  icon  String
+  order Int    @default(0)
+}
+
+// Satisfaction rate gauge
+model SatisfactionRate {
+  id          Int    @id @default(autoincrement())
+  value       Float
+  label       String
+  totalVotes  Int
+}
+
+// Referral tracking mini line charts (Invited / Bonus)
+model ReferralPoint {
+  id     Int    @id @default(autoincrement())
+  series String
+  month  String
+  value  Int
+  order  Int    @default(0)
+}
+
+model ReferralSummary {
+  id           Int    @id @default(autoincrement())
+  series       String @unique
+  total        String
+  changePct    Float
+}
+
+// Circular "Safety" score ring shown alongside referral tracking
+model ScoreRing {
+  id       Int    @id @default(autoincrement())
+  label    String
+  value    Float
+  maxValue Float  @default(10)
+  caption  String
+}
+
+// Projects table
+model Project {
+  id          Int    @id @default(autoincrement())
+  name        String
+  icon        String
+  members     String
+  budget      String
+  completion  Int
+  status      String
+  order       Int    @default(0)
+}
+
+// Orders overview timeline
+model OrderEvent {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+  color       String
+  icon        String
+  order       Int      @default(0)
+}
+
+// Tables page - Authors table
+model Author {
+  id         Int    @id @default(autoincrement())
+  name       String
+  email      String
+  avatarColor String
+  function   String
+  department String
+  status     String
+  employed   String
+  order      Int    @default(0)
+}
+
+// Billing page - invoices
+model Invoice {
+  id     Int    @id @default(autoincrement())
+  date   String
+  code   String
+  amount String
+  order  Int    @default(0)
+}
