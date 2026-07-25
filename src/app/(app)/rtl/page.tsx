@@ -55,13 +55,13 @@ const rtlStats: StatCardData[] = [
 ];
 
 const rtlSales: SalesPointData[] = [
-  { id: 1, month: "Jan", value: 80, order: 0 },
-  { id: 2, month: "Feb", value: 130, order: 1 },
-  { id: 3, month: "Mar", value: 95, order: 2 },
-  { id: 4, month: "Apr", value: 260, order: 3 },
-  { id: 5, month: "May", value: 190, order: 4 },
-  { id: 6, month: "Jun", value: 310, order: 5 },
-  { id: 7, month: "Jul", value: 240, order: 6 },
+  { id: 1, month: "Jan", value: 80, secondary: 140, order: 0 },
+  { id: 2, month: "Feb", value: 130, secondary: 110, order: 1 },
+  { id: 3, month: "Mar", value: 95, secondary: 160, order: 2 },
+  { id: 4, month: "Apr", value: 260, secondary: 190, order: 3 },
+  { id: 5, month: "May", value: 190, secondary: 230, order: 4 },
+  { id: 6, month: "Jun", value: 310, secondary: 200, order: 5 },
+  { id: 7, month: "Jul", value: 240, secondary: 270, order: 6 },
 ];
 
 const rtlProjects = [

@@ -5,7 +5,7 @@ export function Card({
   className,
   style,
 }: {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
 }) {
