@@ -5,15 +5,6 @@ Next.js App Router, TypeScript, Redux Toolkit (RTK Query), Tailwind CSS,
 Framer Motion, Recharts, and a Prisma/SQLite-backed API seeded with dummy
 data.
 
-> **Note on fidelity:** this was built from the widget list in the brief
-> (sidebar nav, stat cards, satisfaction rate, referral tracking, sales
-> overview, active users, projects, orders overview) rather than a
-> pixel-traced Figma file, since the design tool could not be opened in this
-> environment. Layout, spacing, and the Material color system follow the
-> well-known "Material Dashboard" template family this brief describes. If
-> you have the original Figma open, flag any spacing/color deltas and they're
-> straightforward to dial in against the shared `Card`/`Reveal` primitives.
-
 ## Tech stack
 
 | Concern | Choice |
