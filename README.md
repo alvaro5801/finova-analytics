@@ -24,7 +24,7 @@ data.
 | Styling | Tailwind CSS v4 |
 | Animation | Framer Motion (layout/mount transitions) + Recharts (chart-mount animation) |
 | Charts | Recharts (area, bar, radial gauge, sparklines) |
-| Database | SQLite via Prisma ORM |
+| Database | SQLite via Prisma ORM (libSQL driver adapter — same client works locally or against a hosted Turso database) |
 | Icons | lucide-react |
 
 ## Setup instructions
@@ -61,11 +61,25 @@ service. Import the repo in Vercel and it'll pick up `next build`
 automatically; no separate backend deployment (Render/Heroku/etc.) applies
 here.
 
-The one thing to change for a real deployment: local dev uses a
+The one thing to set up for a real deployment: local dev uses a
 file-based SQLite database (`prisma/dev.db`), which doesn't persist on
-Vercel's serverless filesystem. Point `DATABASE_URL` at a hosted Postgres/
-MySQL instance and update the `datasource db` provider in
-`prisma/schema.prisma` before deploying (see "Known limitations" below).
+Vercel's serverless filesystem. The Prisma client already goes through
+the `@prisma/adapter-libsql` driver adapter (`src/lib/prisma.ts`,
+`prisma.config.ts`), so switching to a hosted database is just env vars,
+no code changes:
+
+1. Create a free database at [turso.tech](https://turso.tech).
+2. Set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in Vercel's project
+   environment variables.
+3. Push the schema and seed it once against that database:
+   ```bash
+   TURSO_DATABASE_URL="<url>" TURSO_AUTH_TOKEN="<token>" npm run db:push
+   TURSO_DATABASE_URL="<url>" TURSO_AUTH_TOKEN="<token>" npm run db:seed
+   ```
+
+Without those env vars set, the adapter falls back to the local
+`prisma/dev.db` file — so local dev and `npm run db:*` scripts work
+unchanged.
 
 ## Project structure
 
@@ -177,8 +191,11 @@ scrolling and clicking are never blocked mid-animation.
 - Auth is intentionally mocked (no session persistence, no real password
   hashing) — it's here to demonstrate a validated REST endpoint + RTK Query
   mutation + error handling, not to be production auth.
-- SQLite is used for zero-setup local development; swapping
-  `datasource db` in `prisma/schema.prisma` to Postgres/MySQL only requires
-  changing the provider + `DATABASE_URL`.
-- The RTL page mirrors the shared shell and the widgets rendered on that
-  page; it doesn't retroactively translate the dashboard's live API data.
+- SQLite is used for zero-setup local development, via the
+  `@prisma/adapter-libsql` driver adapter — the same client works
+  unchanged against a hosted Turso database in production (see "Hosted
+  version" above), no provider swap needed.
+- The `/rtl` page renders the same dashboard components with a second,
+  independent set of dummy data (for previewing widgets outside the main
+  dashboard page); it doesn't mirror the app shell or pull from the
+  dashboard's live API data.

@@ -6,9 +6,12 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
+// `url` is required syntactically but ignored at runtime — the actual connection
+// (local file or Turso) is controlled by the driver adapter in prisma.config.ts
+// and src/lib/prisma.ts.
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 // Top-row stat cards: Today's Money, Today's Users, New Clients, Sales
