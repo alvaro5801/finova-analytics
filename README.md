@@ -14,7 +14,7 @@ data.
 > you have the original Figma open, flag any spacing/color deltas and they're
 > straightforward to dial in against the shared `Card`/`Reveal` primitives.
 
-## Stack
+## Tech stack
 
 | Concern | Choice |
 |---|---|
@@ -27,12 +27,23 @@ data.
 | Database | SQLite via Prisma ORM |
 | Icons | lucide-react |
 
-## Getting started
+## Setup instructions
+
+There's no separate backend to stand up — the "backend" is a set of Next.js
+API routes (`src/app/api/*/route.ts`) backed by Prisma/SQLite, deployed
+together with the frontend as a single app. One setup covers both.
+
+**Requirements:** Node.js 20+, npm.
 
 ```bash
 npm install
 npm run db:push   # creates prisma/dev.db from the schema
 npm run db:seed   # seeds ~5-10 rows per table with dummy data
+```
+
+## Running locally
+
+```bash
 npm run dev       # http://localhost:3000
 ```
 
@@ -41,6 +52,20 @@ one step, useful if the schema changes.
 
 The app redirects `/` to `/dashboard`. Sign-in/sign-up are mocked (see
 below) — any valid-looking email + a 6+ character password works.
+
+## Hosted version
+
+Deploy on **Vercel** — it's the only host needed, since the API routes
+ship as part of the same Next.js app rather than a standalone backend
+service. Import the repo in Vercel and it'll pick up `next build`
+automatically; no separate backend deployment (Render/Heroku/etc.) applies
+here.
+
+The one thing to change for a real deployment: local dev uses a
+file-based SQLite database (`prisma/dev.db`), which doesn't persist on
+Vercel's serverless filesystem. Point `DATABASE_URL` at a hosted Postgres/
+MySQL instance and update the `datasource db` provider in
+`prisma/schema.prisma` before deploying (see "Known limitations" below).
 
 ## Project structure
 
