@@ -1,3 +1,8 @@
+## Dashboard on a 1920*1080 screenshot - 
+
+<img width="1917" height="1080" alt="Screenshot 2026-07-25 at 7 40 40 PM" src="https://github.com/user-attachments/assets/2dc43dca-f494-49be-86e0-57e45af59870" />
+
+
 # Material Dashboard (Next.js + Redux Toolkit)
 
 A full-stack recreation of a Material-style admin dashboard, built with the
@@ -190,8 +195,4 @@ scrolling and clicking are never blocked mid-animation.
   independent set of dummy data (for previewing widgets outside the main
   dashboard page); it doesn't mirror the app shell or pull from the
   dashboard's live API data.
-
-## Dashboard on a 1920*1080 screenshot - 
-
-<img width="1917" height="1080" alt="Screenshot 2026-07-25 at 7 40 40 PM" src="https://github.com/user-attachments/assets/2dc43dca-f494-49be-86e0-57e45af59870" />
 
