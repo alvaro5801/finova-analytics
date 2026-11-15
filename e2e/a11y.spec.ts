@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { ROUTES } from "./routes";
+import { ROUTES, gotoReady } from "./routes";
 
 /**
  * Acessibilidade automatizada com axe-core (ADR-0011): critérios WCAG 2.0, 2.1 e 2.2,
@@ -40,7 +40,7 @@ async function expectNoViolations(page: Page) {
 test.describe("acessibilidade (WCAG A/AA)", () => {
   for (const route of ROUTES) {
     test(`${route.path}: sem violações`, async ({ page }) => {
-      await page.goto(route.path);
+      await gotoReady(page, route.path);
       await expect(page.getByText(route.ready).first()).toBeVisible();
       await settle(page);
       await expectNoViolations(page);
@@ -49,7 +49,7 @@ test.describe("acessibilidade (WCAG A/AA)", () => {
 
   test("busca de páginas aberta: sem violações", async ({ page }) => {
     test.skip(page.viewportSize()!.width < 640, "a busca fica oculta no celular");
-    await page.goto("/dashboard");
+    await gotoReady(page, "/dashboard");
     await expect(page.getByText("Receita do mês").first()).toBeVisible();
     await page.getByRole("combobox", { name: "Buscar páginas" }).fill("fat");
     await expect(page.getByRole("listbox", { name: "Páginas" })).toBeVisible();
@@ -59,7 +59,7 @@ test.describe("acessibilidade (WCAG A/AA)", () => {
 
   test("menu de navegação aberto (drawer): sem violações", async ({ page }) => {
     test.skip(page.viewportSize()!.width >= 1024, "o drawer só existe abaixo de 1024px");
-    await page.goto("/dashboard");
+    await gotoReady(page, "/dashboard");
     await expect(page.getByText("Receita do mês").first()).toBeVisible();
     await page.getByRole("button", { name: "Abrir menu" }).click();
     await expect(page.getByRole("dialog", { name: "Menu de navegação" })).toBeVisible();

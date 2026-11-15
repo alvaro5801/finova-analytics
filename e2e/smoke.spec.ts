@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { ROUTES } from "./routes";
+import { ROUTES, gotoReady } from "./routes";
 
 /**
  * Smoke da Finova Analytics. Roda em 3 viewports (ver playwright.config.ts).
@@ -17,7 +17,7 @@ test.describe("rotas", () => {
   for (const route of ROUTES) {
     test(`${route.path}: renderiza, sem erro no console e sem overflow horizontal`, async ({ page }) => {
       const errors = collectErrors(page);
-      await page.goto(route.path);
+      await gotoReady(page, route.path);
 
       await expect(page.getByRole("heading", { level: 1, name: route.heading })).toBeVisible();
       await expect(page.getByText(route.ready).first()).toBeVisible();
@@ -30,14 +30,14 @@ test.describe("rotas", () => {
   }
 
   test("rota inexistente mostra o 404 em PT-BR", async ({ page }) => {
-    await page.goto("/nao-existe");
+    await gotoReady(page, "/nao-existe");
     await expect(page.getByRole("heading", { name: "Página não encontrada" })).toBeVisible();
   });
 });
 
 test.describe("dashboard financeiro", () => {
   test("KPIs exibem valores em BRL", async ({ page }) => {
-    await page.goto("/dashboard");
+    await gotoReady(page, "/dashboard");
     const kpis = page.getByRole("region", { name: "Indicadores principais" });
     await expect(kpis).toContainText(/R\$\s486\.320,45/);
     await expect(kpis).toContainText(/R\$\s312\.870,30/);
@@ -45,7 +45,7 @@ test.describe("dashboard financeiro", () => {
   });
 
   test("filtro de período recalcula o gráfico", async ({ page }) => {
-    await page.goto("/dashboard");
+    await gotoReady(page, "/dashboard");
     const card = page.locator(".fn-card", { hasText: "Receita × Despesas" });
     await expect(card).toContainText("em 12 meses");
 
@@ -57,7 +57,7 @@ test.describe("dashboard financeiro", () => {
 
   test("tooltip do gráfico mostra mês por extenso e resultado em BRL", async ({ page, isMobile }) => {
     test.skip(isMobile, "hover não se aplica a toque");
-    await page.goto("/dashboard");
+    await gotoReady(page, "/dashboard");
     const card = page.locator(".fn-card", { hasText: "Receita × Despesas" });
     const surface = card.locator(".recharts-surface").first();
     await surface.scrollIntoViewIfNeeded();
@@ -74,7 +74,7 @@ test.describe("dashboard financeiro", () => {
 
 test.describe("navegação", () => {
   test("menu leva ao Faturamento (sidebar no desktop, drawer abaixo de 1024px)", async ({ page }) => {
-    await page.goto("/dashboard");
+    await gotoReady(page, "/dashboard");
     const width = page.viewportSize()!.width;
 
     if (width < 1024) {
@@ -92,7 +92,7 @@ test.describe("navegação", () => {
 
   test("busca de páginas: atalho / e Enter navegam", async ({ page }) => {
     test.skip(page.viewportSize()!.width < 640, "a busca fica oculta no celular");
-    await page.goto("/dashboard");
+    await gotoReady(page, "/dashboard");
     await expect(page.getByRole("heading", { level: 1, name: "Visão geral" })).toBeVisible();
 
     await page.keyboard.press("/");
@@ -106,22 +106,22 @@ test.describe("navegação", () => {
   });
 
   test("prévia RTL inverte a direção e restaura ao sair", async ({ page }) => {
-    await page.goto("/rtl");
+    await gotoReady(page, "/rtl");
     await expect(page.locator("[dir=rtl]")).toHaveCount(1);
-    await page.goto("/dashboard");
+    await gotoReady(page, "/dashboard");
     await expect(page.locator("[dir=rtl]")).toHaveCount(0);
   });
 });
 
 test.describe("autenticação simulada", () => {
   test("login leva ao painel", async ({ page }) => {
-    await page.goto("/sign-in");
+    await gotoReady(page, "/sign-in");
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
   });
 
   test("erro de validação da API aparece em PT-BR", async ({ page }) => {
-    await page.goto("/sign-in");
+    await gotoReady(page, "/sign-in");
     await page.getByLabel("Senha").fill("123");
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
     await expect(page.locator("form").getByRole("alert")).toContainText("A senha precisa ter pelo menos 6 caracteres.");
@@ -132,7 +132,7 @@ test.describe("movimento reduzido", () => {
   test.use({ reducedMotion: "reduce" });
 
   test("KPIs aparecem com o valor final, sem contagem, e transições CSS ficam congeladas", async ({ page }) => {
-    await page.goto("/dashboard");
+    await gotoReady(page, "/dashboard");
     const kpis = page.getByRole("region", { name: "Indicadores principais" });
     await kpis.getByText("Receita do mês").waitFor();
 
