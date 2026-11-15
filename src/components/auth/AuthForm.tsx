@@ -65,7 +65,7 @@ export function AuthSubmit({ loading, children }: { loading: boolean; children: 
     <button
       type="submit"
       disabled={loading}
-      className="fn-btn-primary mt-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white disabled:opacity-70"
+      className="fn-btn-primary mt-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold disabled:opacity-70"
     >
       {loading && <Loader2 size={16} className="animate-spin" aria-hidden="true" />}
       {children}

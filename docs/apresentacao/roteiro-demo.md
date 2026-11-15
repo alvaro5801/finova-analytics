@@ -43,7 +43,7 @@
 2. **`src/lib/format.ts`:** *"A formatação fica só na borda, com `Intl` pt-BR. E tem uma pegadinha: o `Intl` coloca um espaço não separável depois do R$, o que quebra testes escritos com espaço comum."*
 3. **`src/app/(app)/dashboard/page.tsx`:** *"Cada widget tem o próprio hook, skeleton e erro com retry. Uma rota que cai não derruba o painel."*
 4. **Terminal:** `npm run test:e2e`.
-   - *"São 51 cenários em 3 viewports: rotas, overflow, console limpo, BRL, filtro, busca, RTL, login e reduced motion. Tudo contra o build de produção."*
+   - *"São 78 cenários em 3 viewports: rotas, overflow, console limpo, BRL, filtro, busca, RTL, login, reduced motion e acessibilidade WCAG AA com axe. Tudo contra o build de produção. Mais 17 testes unitários, que acharam um bug de sinal negativo na primeira execução."*
 
 ## 4:15–5:00 · Trade-offs e próximos passos
 
@@ -59,7 +59,7 @@
 | Pergunta | Resposta curta |
 |---|---|
 | Por que centavos e não `Decimal`? | Inteiro é exato, portável entre bancos e é o padrão de gateways como Stripe e Adyen. A formatação fica na UI. |
-| Como garantiu que nada quebrou? | Lint, tipos, build e 49 cenários E2E passando em 3 viewports. O relatório de QA lista também o que **não** foi testado. |
+| Como garantiu que nada quebrou? | Lint, tipos, 17 testes unitários e 78 cenários E2E (incluindo acessibilidade WCAG AA) em 3 viewports. O relatório de QA lista também o que **não** foi testado. |
 | Por que Recharts e não D3? | Já estava no projeto. Restrição: não adicionar dependências sem necessidade. |
 | Como lida com dark mode e cores? | Tokens únicos em `@theme`, espelhados em `tokens.ts` para o Recharts. Contraste AA calculado. |
 | O que faria com mais tempo? | Renomear modelos e API, criar agregados reais, Turso em produção, testes unitários em `format.ts` e Safari/Firefox no E2E. |

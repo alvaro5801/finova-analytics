@@ -41,7 +41,7 @@ npm run ci:local          # mesmos gates do CI: lint, tipos, unitários, auditor
 npm run lint
 npm run typecheck
 npm run test:unit         # testes unitários (node:test, ~130 ms)
-npm run test:e2e          # build de produção + 51 cenários (7 rotas × 3 viewports + fluxos)
+npm run test:e2e          # build de produção + 78 cenários: smoke e acessibilidade (WCAG A/AA, axe)
 npm run test:e2e:report   # abre o relatório HTML do último run
 ```
 
@@ -53,7 +53,8 @@ A suíte (`e2e/smoke.spec.ts`) verifica:
 - a navegação pela sidebar (desktop) e pelo drawer (tablet/celular);
 - a busca de páginas (`/` + Enter);
 - a direção RTL, o login e o erro de validação em PT-BR;
-- o modo de movimento reduzido.
+- o modo de movimento reduzido;
+- acessibilidade WCAG A/AA com axe nas 7 rotas, com a busca e o drawer abertos ([ADR-0011](docs/decisoes/0011-acessibilidade-automatizada-axe.md)).
 
 ## Documentação
 
