@@ -6,7 +6,7 @@ Arquivo: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) · Decisã
 
 ```mermaid
 flowchart LR
-  PR[Pull request / push na main] --> Q[Qualidade<br/>lint + tipos]
+  PR[Pull request / push na main] --> Q[Qualidade<br/>lint + tipos + unitários]
   PR --> S[Segurança<br/>gitleaks + npm audit]
   Q --> E[E2E<br/>Playwright 3 viewports]
   E -.semanal / manual / rótulo.-> B[Burn-in<br/>testes instáveis]
@@ -19,7 +19,7 @@ flowchart LR
 
 | Job | O que verifica | Bloqueia o deploy? |
 |---|---|---|
-| **Qualidade** | `npm run lint` + `npm run typecheck` | Sim |
+| **Qualidade** | `npm run lint` + `npm run typecheck` + `npm run test:unit` | Sim |
 | **Segurança** | Segredos no histórico (gitleaks) e `npm audit` das dependências de produção | Sim, para segredo ou vulnerabilidade **crítica**. Altas viram aviso no resumo do job |
 | **E2E** | 51 cenários Playwright em 1440/768/390 px contra o build de produção, com o banco recriado pelo seed | Sim |
 | **Burn-in** | A suíte repetida 5× sem retries, para expor testes instáveis | Não (roda à parte) |
@@ -91,7 +91,7 @@ Enquanto não houver branch protection, a regra é: **trabalhar em branch e abri
 ## Rodando localmente
 
 ```bash
-npm run ci:local                      # lint, tipos, auditoria e E2E (mesmos gates do CI)
+npm run ci:local                      # lint, tipos, unitários, auditoria e E2E (mesmos gates do CI)
 ITERATIONS=10 bash scripts/burn-in.sh # burn-in completo (padrão TEA: 10 iterações)
 ```
 
