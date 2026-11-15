@@ -39,7 +39,7 @@ env:
 jobs:
   quality:
     name: Qualidade · lint e tipos
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -62,7 +62,7 @@ jobs:
 
   security:
     name: Segurança · segredos e dependências
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
@@ -98,7 +98,7 @@ jobs:
   e2e:
     name: E2E · Playwright (3 viewports)
     needs: quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -155,7 +155,7 @@ jobs:
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && inputs.burn_in) ||
       contains(github.event.pull_request.labels.*.name, 'burn-in')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       ITERATIONS: "5" # padrão TEA é 10; 5 cabe no orçamento de minutos do repositório privado
@@ -198,7 +198,7 @@ jobs:
     if: >-
       github.event_name == 'push' ||
       (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read

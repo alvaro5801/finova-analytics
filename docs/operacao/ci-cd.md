@@ -41,7 +41,7 @@ flowchart LR
 - **`persist-credentials: false`** no checkout: o token não fica gravado no `.git` do runner.
 - **Concorrência:** em PR, uma execução nova cancela a anterior. Na `main`, as execuções entram em fila e um deploy nunca é interrompido.
 - **Timeouts por job** e **cache** de dependências npm e dos navegadores do Playwright.
-- **Reprodutibilidade:** Node fixado por `.nvmrc`, `npm ci` com lockfile, CLI da Vercel com versão fixa.
+- **Reprodutibilidade:** runner fixado em `ubuntu-24.04` (o `ubuntu-latest` migra de versão de sistema sozinho, e o Dependabot não atualiza o rótulo do runner, então a troca é manual e deliberada), Node fixado por `.nvmrc`, `npm ci` com lockfile, CLI da Vercel com versão fixa.
 - **Deploy só depois dos gates** (`needs`), com smoke test pós-deploy em produção.
 - **Artefatos só em falha** (relatório HTML e traces do Playwright), com retenção de 14 dias.
 - **Sem segredo em código:** credenciais vêm de *secrets* e *variables* do GitHub.

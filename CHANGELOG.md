@@ -4,6 +4,9 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Alterado
+- CI: runners fixados em `ubuntu-24.04`, em vez de `ubuntu-latest`, que está migrando para o Ubuntu 26.
+
 ### Documentação
 - [ADR-0008](docs/decisoes/0008-adiar-migracao-prisma-7.md): migração para o Prisma 7 adiada, com a análise de exposição (vulnerabilidade só na CLI), os gatilhos de revisão e o plano de migração.
 
