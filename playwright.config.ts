@@ -11,7 +11,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: [["list"], ["html", { open: "never" }]],
+  workers: process.env.CI ? 2 : undefined,
+  // No CI: anotações inline no PR (github) + relatório HTML publicado como artefato em falhas.
+  reporter: process.env.CI
+    ? [["github"], ["list"], ["html", { open: "never" }]]
+    : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: `http://localhost:${PORT}`,
     locale: "pt-BR",
