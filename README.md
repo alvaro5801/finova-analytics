@@ -1,198 +1,127 @@
-## Dashboard on a 1920*1080 screenshot - 
+# Finova Analytics
 
-<img width="1917" height="1080" alt="Screenshot 2026-07-25 at 7 40 40 PM" src="https://github.com/user-attachments/assets/2dc43dca-f494-49be-86e0-57e45af59870" />
+Painel financeiro em dark mode: receitas, despesas, fluxo de caixa, metas e orçamentos, com animações e navegação fluida. Começou a partir do template Vision UI e foi redesenhado e remodelado como um SaaS financeiro brasileiro.
 
+> **Ambiente de demonstração.** Todos os nomes, valores e e-mails são fictícios (domínio reservado `.example`) e vêm do seed do banco.
 
-# Material Dashboard (Next.js + Redux Toolkit)
+![Visão geral no desktop](docs/screenshots/dashboard-desktop.png)
 
-A full-stack recreation of a Material-style admin dashboard, built with the
-Next.js App Router, TypeScript, Redux Toolkit (RTK Query), Tailwind CSS,
-Framer Motion, Recharts, and a Prisma/SQLite-backed API seeded with dummy
-data.
+<img src="docs/screenshots/dashboard-mobile.png" alt="Visão geral no celular" width="260" />
 
-## Tech stack
+## Stack
 
-| Concern | Choice |
+| Camada | Escolha |
 |---|---|
 | Framework | Next.js 16 (App Router, Turbopack) |
-| Language | TypeScript |
-| State management | Redux Toolkit + RTK Query |
-| Styling | Tailwind CSS v4 |
-| Animation | Framer Motion (layout/mount transitions) + Recharts (chart-mount animation) |
-| Charts | Recharts (area, bar, radial gauge, sparklines) |
-| Database | SQLite via Prisma ORM (libSQL driver adapter — same client works locally or against a hosted Turso database) |
-| Icons | lucide-react |
+| Linguagem | TypeScript |
+| Estado | Redux Toolkit + RTK Query |
+| Estilo | Tailwind CSS v4 (tokens em `@theme`, container queries) |
+| Animação | Framer Motion (layout, entrada, contagem) + Recharts (desenho dos gráficos) |
+| Gráficos | Recharts (área, barras) e gauges SVG próprios |
+| Banco | SQLite via Prisma (adapter libSQL: o mesmo client funciona local ou com Turso) |
+| Testes | Playwright (smoke E2E em 3 viewports) |
+| Fonte e ícones | Geist (`next/font`), lucide-react |
 
-## Setup instructions
+## Rodando localmente
 
-There's no separate backend to stand up — the "backend" is a set of Next.js
-API routes (`src/app/api/*/route.ts`) backed by Prisma/SQLite, deployed
-together with the frontend as a single app. One setup covers both.
-
-**Requirements:** Node.js 20+, npm.
+Requisitos: Node.js 20+ e npm.
 
 ```bash
 npm install
-npm run db:push   # creates prisma/dev.db from the schema
-npm run db:seed   # seeds ~5-10 rows per table with dummy data
+npm run db:reset   # recria prisma/dev.db a partir do schema e roda o seed (apaga os dados locais)
+npm run dev        # http://localhost:3000
 ```
 
-## Running locally
+`/` redireciona para `/dashboard`. O login é simulado: qualquer e-mail válido e senha com 6+ caracteres funcionam.
+
+## Testes
 
 ```bash
-npm run dev       # http://localhost:3000
+npm run lint
+npm run test:e2e          # build de produção + 51 cenários (7 rotas × 3 viewports + fluxos)
+npm run test:e2e:report   # abre o relatório HTML do último run
 ```
 
-`npm run db:reset` re-creates the database from scratch and reseeds it in
-one step, useful if the schema changes.
+A suíte (`e2e/smoke.spec.ts`) verifica:
 
-The app redirects `/` to `/dashboard`. Sign-in/sign-up are mocked (see
-below) — any valid-looking email + a 6+ character password works.
+- as 7 rotas sem erro no console e sem overflow horizontal em 1440, 768 e 390 px;
+- KPIs em BRL;
+- o filtro de período do gráfico e o tooltip em BRL;
+- a navegação pela sidebar (desktop) e pelo drawer (tablet/celular);
+- a busca de páginas (`/` + Enter);
+- a direção RTL, o login e o erro de validação em PT-BR;
+- o modo de movimento reduzido.
 
-## Hosted version
+## Documentação
 
-Deploy on **Vercel** — it's the only host needed, since the API routes
-ship as part of the same Next.js app rather than a standalone backend
-service. Import the repo in Vercel and it'll pick up `next build`
-automatically; no separate backend deployment (Render/Heroku/etc.) applies
-here.
+A documentação viva fica em [`docs/`](docs/README.md): [PRD inicial](docs/produto/prd-inicial.md), [decisões (ADRs)](docs/decisoes/README.md), [histórico da fase 1](docs/historico/2026-11-15-fase-1.md), [relatório de QA](docs/qualidade/relatorio-qa-fase-1.md), [deploy](docs/operacao/deploy.md) e [roteiro de demo](docs/apresentacao/roteiro-demo.md). Versões no [CHANGELOG](CHANGELOG.md).
 
-The one thing to set up for a real deployment: local dev uses a
-file-based SQLite database (`prisma/dev.db`), which doesn't persist on
-Vercel's serverless filesystem. The Prisma client already goes through
-the `@prisma/adapter-libsql` driver adapter (`src/lib/prisma.ts`,
-`prisma.config.ts`), so switching to a hosted database is just env vars,
-no code changes:
+## Decisões de engenharia
 
-1. Create a free database at [turso.tech](https://turso.tech).
-2. Set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in Vercel's project
-   environment variables.
-3. Push the schema and seed it once against that database:
-   ```bash
-   TURSO_DATABASE_URL="<url>" TURSO_AUTH_TOKEN="<token>" npm run db:push
-   TURSO_DATABASE_URL="<url>" TURSO_AUTH_TOKEN="<token>" npm run db:seed
-   ```
+**Dinheiro em centavos (inteiros).** Nenhum valor monetário fica no banco como `float` ou string formatada. Colunas com sufixo `Cents` guardam inteiros, e métricas mistas usam `value Int` + `format`: `currency` são centavos, `percent` são pontos-base (1% = 100) e `number` são unidades. A formatação acontece só na interface, em `src/lib/format.ts`, com `Intl` pt-BR.
 
-Without those env vars set, the adapter falls back to the local
-`prisma/dev.db` file — so local dev and `npm run db:*` scripts work
-unchanged.
+> Pegadinha documentada: o `Intl` em pt-BR insere um **espaço não separável** (U+00A0) entre `R$` e o número. Nos testes, use `/R\$\s/`.
 
-## Project structure
+**Tokens únicos de design.** As cores, sombras e easing ficam em `@theme` (`src/app/globals.css`). O Recharts e o SVG não leem classes Tailwind, então recebem os mesmos valores de `src/lib/tokens.ts`.
 
-```
-prisma/
-  schema.prisma        # StatCard, SalesPoint, ActiveUsersPoint/Stat,
-                        # SatisfactionRate, ReferralPoint/Summary, Project,
-                        # OrderEvent, Author, Invoice
-  seed.ts               # populates every table with dummy data
+**Animação com propósito.** As transições de interface ficam entre 200 e 400 ms. O desenho dos gráficos leva 700 ms só na primeira montagem e 300 ms nas trocas de período. Com `prefers-reduced-motion`, tudo é congelado: o `MotionConfig` cobre o Framer, o `useReducedMotion` cobre o Recharts e uma media query cobre o CSS.
 
-src/
-  app/
-    (app)/              # sidebar + navbar shell (route group, no URL segment)
-      layout.tsx
-      dashboard/page.tsx
-      tables/page.tsx
-      billing/page.tsx
-      rtl/page.tsx
-      profile/page.tsx
-    (auth)/             # centered gradient shell for auth pages
-      sign-in/page.tsx
-      sign-up/page.tsx
-    api/                # REST route handlers (see below)
-  components/
-    layout/             # Sidebar, Navbar
-    ui/                 # Card, Skeleton, Toggle, Reveal (mount animation)
-    dashboard/          # one component + matching *Skeleton per widget
-    tables/ billing/    # page-specific widgets
-  store/
-    api/dashboardApi.ts # RTK Query endpoints
-    slices/uiSlice.ts   # sidebar open/closed, ltr/rtl direction
-    slices/authSlice.ts # mocked signed-in user
-    store.ts, provider.tsx, hooks.ts
-  lib/
-    prisma.ts           # Prisma client singleton
-    api-utils.ts        # response helpers + simulated network latency
-    icon-map.tsx         # DB icon-key -> lucide icon, rendered via renderIcon()
-  types/dashboard.ts    # shared API/domain types
-```
+**Widgets isolados.** Cada card lê o próprio hook RTK Query e tem skeleton e estado de erro com "Tentar novamente". Uma rota que falha não derruba o painel.
 
-## API design
+**Container queries.** O tamanho dos valores dos KPIs acompanha a largura do card, não a da viewport, e não trunca de 320 a 1920 px.
 
-All routes live under `src/app/api/*/route.ts` and return a consistent
-envelope:
+## API
 
-- Success: `200 { data: T }`
-- Failure: `4xx { error: { message: string } }`
+Rotas em `src/app/api/*/route.ts`, com envelope `{ data }` ou `{ error: { message } }`. Os nomes das rotas e dos modelos vieram do template original. A tabela mostra o significado financeiro de cada um:
 
-| Route | Method | Purpose |
+| Rota | Modelo | Exibido como |
 |---|---|---|
-| `/api/stats` | GET | The 4 top-row stat cards (money, users, clients, sales) |
-| `/api/sales-overview` | GET | Monthly revenue series for the gradient area chart |
-| `/api/active-users` | GET | Weekly bar-chart series + 4 mini stat chips |
-| `/api/satisfaction` | GET | Satisfaction-rate gauge value |
-| `/api/referral` | GET | Invited/Bonus sparkline series + summaries |
-| `/api/projects` | GET | Projects table (also reused on the Tables page) |
-| `/api/orders` | GET | Orders-overview timeline |
-| `/api/authors` | GET | Authors table (Tables page) |
-| `/api/invoices` | GET | Invoices list (Billing page) |
-| `/api/auth/sign-in` | POST | Mock auth — validates email/password, returns a fake token |
-| `/api/auth/sign-up` | POST | Mock auth — validates name/email/password |
+| `GET /api/stats` | `StatCard` | KPIs: Receita, Despesas, Saldo, Crescimento |
+| `GET /api/sales-overview` | `SalesPoint` | Receita × Despesas (12 meses, em centavos) |
+| `GET /api/active-users` | `ActiveUsersPoint` / `ActiveUsersStat` | Volume de transações + indicadores operacionais |
+| `GET /api/satisfaction` | `SatisfactionRate` | Meta anual de receita (% atingido) |
+| `GET /api/referral` | `ReferralSummary` / `ScoreRing` | Saúde financeira (contas a receber, margem, score) |
+| `GET /api/projects` | `Project` | Orçamentos por área |
+| `GET /api/orders` | `OrderEvent` | Transações recentes (valor com sinal) |
+| `GET /api/authors` | `Author` | Equipe financeira |
+| `GET /api/invoices` | `Invoice` | Faturas da assinatura |
+| `POST /api/auth/sign-in` · `sign-up` | — | Login e cadastro simulados, com validação |
 
-Every GET route adds a randomized 350–750ms delay (`simulateLatency` in
-`lib/api-utils.ts`) purely so the loading skeletons are visible instead of
-flashing instantly — remove it if you don't want the artificial latency.
+Todas as rotas GET têm uma latência artificial de 350 a 750 ms (`simulateLatency`) para que os skeletons fiquem visíveis na demonstração.
 
-## State management
+## Deploy (Vercel + Turso)
 
-- **RTK Query** (`store/api/dashboardApi.ts`) owns all server data: caching,
-  loading/error flags, and refetching. Every dashboard widget reads its own
-  `useGetXQuery()` hook and renders a matching skeleton while
-  `isLoading`, or an inline error state on `isError` — no widget can crash
-  the rest of the page.
-- **`uiSlice`** holds `sidebarOpen` (mobile drawer) and `direction`
-  (`ltr`/`rtl`). The RTL page dispatches `setDirection('rtl')` on mount and
-  reverts on unmount, which flips the whole app shell (sidebar side, padding,
-  icon positions) via Tailwind logical properties (`start-*`/`end-*`,
-  `ps-*`/`pe-*`), not just the page content.
-- **`authSlice`** holds the mocked signed-in user set after a successful
-  sign-in/up, read by the Navbar and Profile page.
+O SQLite local não persiste no serverless. Com `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN` definidos, o adapter libSQL aponta para o Turso sem mudar código.
 
-## Animations
+**Atenção:** o schema mudou (valores em centavos). Um banco Turso criado com a versão anterior precisa ser recriado e repopulado (passo a passo em [docs/operacao/deploy.md](docs/operacao/deploy.md)). A operação é destrutiva e só deve ser feita num banco de demonstração:
 
-- **Sidebar**: active nav item is a shared `layoutId` pill that slides
-  between items (Framer Motion shared-layout animation); the mobile drawer
-  slides in/out with a spring transition and a fading backdrop.
-- **Cards**: `<Reveal>` fades + slides every widget in on mount, staggered
-  per row so the dashboard doesn't pop in all at once.
-- **Charts**: Recharts' built-in mount animation is enabled on every
-  area/bar/radial/line chart (`isAnimationActive`), and table rows /
-  progress bars animate in individually.
-- **Micro-interactions**: hover-lift on cards, rotate-on-hover settings
-  icon, animated toggle switches on the Profile page.
+```bash
+TURSO_DATABASE_URL="<url>" TURSO_AUTH_TOKEN="<token>" npm run db:reset
+```
 
-None of this blocks interaction — it's CSS/opacity/transform driven, so
-scrolling and clicking are never blocked mid-animation.
+## Estrutura
 
-## Responsive design
+```
+prisma/            schema.prisma (convenções de valores no topo) · seed.ts (dados demo coerentes)
+e2e/               smoke.spec.ts (Playwright)
+src/
+  app/(app)/       dashboard · tables · billing · profile · rtl  (shell com sidebar + navbar)
+  app/(auth)/      sign-in · sign-up
+  app/api/         rotas REST
+  components/
+    brand/         logo Finova
+    dashboard/     cards do painel (KPI, resumo, meta, saúde, gráficos, orçamentos, transações)
+    layout/        Sidebar, Navbar, PageSearch
+    ui/            Card, CardHeader, ErrorState, Skeleton, DeltaBadge, AnimatedNumber, ChartTooltip, SegmentedControl…
+  lib/             format.ts · tokens.ts · tones.ts · icon-map.tsx · prisma.ts
+  store/           RTK Query + slices (ui, auth)
+```
 
-- `lg` breakpoint (1024px): fixed sidebar, full navbar search box.
-- Below `lg`: sidebar becomes an off-canvas drawer (opened via the navbar's
-  hamburger button), 2-column stat-card grid, and the search input hides to
-  save space.
-- All chart cards use `ResponsiveContainer` so charts reflow with their
-  parent grid cell at every width.
+## Limitações conhecidas e próximos passos
 
-## Known limitations / next steps
-
-- Auth is intentionally mocked (no session persistence, no real password
-  hashing) — it's here to demonstrate a validated REST endpoint + RTK Query
-  mutation + error handling, not to be production auth.
-- SQLite is used for zero-setup local development, via the
-  `@prisma/adapter-libsql` driver adapter — the same client works
-  unchanged against a hosted Turso database in production (see "Hosted
-  version" above), no provider swap needed.
-- The `/rtl` page renders the same dashboard components with a second,
-  independent set of dummy data (for previewing widgets outside the main
-  dashboard page); it doesn't mirror the app shell or pull from the
-  dashboard's live API data.
-
+- A autenticação é simulada: não há sessão nem hash de senha.
+- Os nomes dos modelos e das rotas são herdados do template. O próximo passo seria renomeá-los (`SatisfactionRate` → `RevenueGoal` etc.) junto com a API.
+- Os KPIs são linhas pré-calculadas no seed. Em produção, seriam agregados calculados a partir das transações.
+- `Int` no Prisma tem 32 bits, ou seja, até cerca de R$ 21 milhões em centavos. Para escala real, a migração seria para `BigInt`.
+- Os botões "PDF" e "Novo cartão" ficam desabilitados de propósito na demo.
+- O E2E roda só em Chromium. Safari e Firefox não foram testados.
