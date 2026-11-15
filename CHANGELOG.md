@@ -9,6 +9,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Testes unitários de `src/lib/format.ts` com `node:test` (17 casos, sem dependência nova), rodando no job Qualidade do CI ([ADR-0010](docs/decisoes/0010-testes-unitarios-node-test.md)).
 
 ### Corrigido
+- Teste E2E instável no CI (atalho `/` da busca, que falhou na primeira tentativa e passou no retry). Os testes agora esperam `<html data-app-ready>`, um sinal de que o React hidratou e os listeners existem, antes de interagir (`gotoReady`).
 - Acessibilidade (WCAG 2.5.3): os botões 3M/6M/12M e o link do logo agora têm nome acessível que contém o texto visível.
 - Acessibilidade (WCAG 2.1.1): as tabelas com rolagem horizontal podem ser roladas pelo teclado.
 - Valores negativos em `formatBRL` usavam o hífen (U+002D), enquanto o resto da interface usa o menos tipográfico (U+2212). Bug encontrado pelos novos testes unitários.
