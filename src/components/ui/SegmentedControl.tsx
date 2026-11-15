@@ -47,7 +47,7 @@ export function SegmentedControl<T extends string>({
             {active && (
               <motion.span
                 layoutId={`segment-${groupId}`}
-                className="absolute inset-0 -z-10 rounded-lg bg-primary/25 ring-1 ring-inset ring-primary/40"
+                className="absolute inset-0 -z-10 rounded-lg bg-white/[0.08] ring-1 ring-inset ring-line-strong"
                 transition={{ type: "spring", stiffness: 500, damping: 38 }}
               />
             )}

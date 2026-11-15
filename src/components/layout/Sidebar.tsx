@@ -2,17 +2,32 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import { Sparkles, X } from "lucide-react";
+import { LogOut, X } from "lucide-react";
 import clsx from "clsx";
-import { FinovaLogo } from "@/components/brand/FinovaLogo";
+import { FinovaLogo, FinovaMark } from "@/components/brand/FinovaLogo";
 import { navSections, type NavItem } from "@/config/nav";
 import { motionTokens } from "@/lib/tokens";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeSidebar } from "@/store/slices/uiSlice";
+import { clearUser } from "@/store/slices/authSlice";
 
-function NavLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
+const navItemBase =
+  "group relative isolate flex items-center gap-3 whitespace-nowrap rounded-xl py-2.5 text-sm font-medium transition-colors duration-200";
+const navItemInactive = "text-muted hover:bg-white/[0.04] hover:text-fg";
+const navIconBase = "shrink-0 transition-colors duration-200";
+const navIconInactive = "text-muted group-hover:text-fg";
+
+function NavLink({
+  item,
+  onNavigate,
+  collapsed,
+}: {
+  item: NavItem;
+  onNavigate: () => void;
+  collapsed: boolean;
+}) {
   const pathname = usePathname();
   const active = pathname === item.href;
   const Icon = item.icon;
@@ -22,63 +37,74 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }
       href={item.href}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
+      title={collapsed ? item.label : undefined}
       className={clsx(
-        "group relative isolate flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200",
-        active ? "text-fg" : "text-muted hover:bg-white/[0.04] hover:text-fg",
+        navItemBase,
+        collapsed ? "ps-3.5 pe-3" : "px-3",
+        active ? "text-fg" : navItemInactive,
       )}
     >
       {active && (
         <motion.span
           layoutId="active-nav-pill"
-          className="absolute inset-0 -z-10 rounded-xl bg-primary/[0.14] ring-1 ring-inset ring-primary/30"
+          className="absolute inset-0 -z-10 rounded-xl bg-white/[0.05] ring-1 ring-inset ring-line-strong"
           transition={{ type: "spring", stiffness: 420, damping: 36 }}
         >
-          <span className="absolute inset-y-2.5 start-0 w-[3px] rounded-full bg-primary-light" />
+          <span className="absolute inset-y-2.5 start-0 w-[3px] rounded-full bg-primary" />
         </motion.span>
       )}
       <Icon
         size={18}
         strokeWidth={1.9}
         aria-hidden="true"
-        className={clsx(
-          "shrink-0 transition-colors duration-200",
-          active ? "text-primary-light" : "text-muted group-hover:text-fg",
-        )}
+        className={clsx(navIconBase, active ? "text-fg" : navIconInactive)}
       />
-      <span>{item.label}</span>
+      <span className={clsx(collapsed && "sr-only")}>{item.label}</span>
     </Link>
   );
 }
 
-function DemoNotice() {
+function LogoutButton({ onNavigate, collapsed }: { onNavigate: () => void; collapsed: boolean }) {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  const logout = () => {
+    dispatch(clearUser());
+    onNavigate();
+    router.push("/sign-in");
+  };
+
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-line p-4">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(14rem 9rem at 100% 0%, rgb(121 88 245 / 0.35), transparent 70%), radial-gradient(12rem 8rem at 0% 100%, rgb(34 211 238 / 0.16), transparent 70%)",
-        }}
-      />
-      <div className="relative">
-        <span className="grad-brand flex h-8 w-8 items-center justify-center rounded-lg text-white shadow-glow">
-          <Sparkles size={16} aria-hidden="true" />
-        </span>
-        <p className="mt-3 text-sm font-semibold text-fg">Ambiente de demonstração</p>
-        <p className="mt-1 text-xs leading-relaxed text-muted">
-          Todos os valores são fictícios e gerados pelo seed do banco.
-        </p>
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={logout}
+      title={collapsed ? "Sair" : undefined}
+      className={clsx(navItemBase, "w-full", collapsed ? "ps-3.5 pe-3" : "px-3", navItemInactive)}
+    >
+      <LogOut size={18} strokeWidth={1.9} aria-hidden="true" className={clsx(navIconBase, navIconInactive)} />
+      <span className={clsx(collapsed && "sr-only")}>Sair</span>
+    </button>
   );
 }
 
-function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
+function SidebarContent({
+  onNavigate,
+  collapsed = false,
+}: {
+  onNavigate: () => void;
+  collapsed?: boolean;
+}) {
   return (
-    <div className="flex h-full flex-col overflow-y-auto px-4 py-5">
+    <div className="flex h-full flex-col overflow-y-auto overflow-x-hidden whitespace-nowrap px-4 py-5">
       <Link href="/dashboard" onClick={onNavigate} className="px-2">
-        <FinovaLogo />
+        {collapsed ? (
+          <span className="inline-flex">
+            <FinovaMark />
+            <span className="sr-only">Finova Analytics</span>
+          </span>
+        ) : (
+          <FinovaLogo />
+        )}
       </Link>
 
       <div
@@ -87,14 +113,24 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
       />
 
       <nav aria-label="Navegação principal" className="mt-2 flex flex-col">
-        {navSections.map((section) => (
+        {navSections.map((section, index) => (
           <div key={section.title} className="mt-4">
-            <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted/80">
-              {section.title}
-            </p>
+            <div className="mb-1.5 flex h-4 items-center px-3">
+              <p
+                className={clsx(
+                  "text-[11px] font-semibold uppercase leading-4 tracking-[0.14em] text-muted/80",
+                  collapsed && "sr-only",
+                )}
+              >
+                {section.title}
+              </p>
+              {collapsed && index > 0 && (
+                <span aria-hidden="true" className="h-px w-full bg-line-strong" />
+              )}
+            </div>
             <div className="flex flex-col gap-1">
               {section.items.map((item) => (
-                <NavLink key={item.href} item={item} onNavigate={onNavigate} />
+                <NavLink key={item.href} item={item} onNavigate={onNavigate} collapsed={collapsed} />
               ))}
             </div>
           </div>
@@ -102,7 +138,7 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
       </nav>
 
       <div className="mt-auto pt-6">
-        <DemoNotice />
+        <LogoutButton onNavigate={onNavigate} collapsed={collapsed} />
       </div>
     </div>
   );
@@ -110,6 +146,7 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
 
 export function Sidebar() {
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);
+  const collapsed = useAppSelector((state) => state.ui.sidebarCollapsed);
   const direction = useAppSelector((state) => state.ui.direction);
   const dispatch = useAppDispatch();
   const close = () => dispatch(closeSidebar());
@@ -125,9 +162,15 @@ export function Sidebar() {
   return (
     <>
       {/* Sidebar fixa no desktop */}
-      <aside className="fn-card fixed inset-y-4 start-4 z-30 hidden w-64 rounded-2xl lg:block">
+      <aside
+        id="sidebar-desktop"
+        className={clsx(
+          "fn-card fixed inset-y-4 start-4 z-30 hidden overflow-hidden rounded-2xl transition-[width] duration-300 ease-out-soft lg:block",
+          collapsed ? "w-20" : "w-64",
+        )}
+      >
         <LayoutGroup id="sidebar-desktop">
-          <SidebarContent onNavigate={() => {}} />
+          <SidebarContent onNavigate={() => {}} collapsed={collapsed} />
         </LayoutGroup>
       </aside>
 

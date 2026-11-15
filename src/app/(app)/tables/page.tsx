@@ -28,7 +28,7 @@ export default function TablesPage() {
       )}
       {projects.data && (
         <Reveal delay={0.08}>
-          <BudgetsCard projects={projects.data} />
+          <BudgetsCard projects={projects.data} filterable />
         </Reveal>
       )}
     </div>

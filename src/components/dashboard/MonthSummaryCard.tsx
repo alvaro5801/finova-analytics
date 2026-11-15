@@ -17,13 +17,6 @@ const DEMO_USER = "Marina Costa";
 function Backdrop() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(26rem 16rem at 100% 0%, rgb(121 88 245 / 0.28), transparent 65%), radial-gradient(18rem 12rem at 85% 110%, rgb(34 211 238 / 0.14), transparent 70%)",
-        }}
-      />
       <svg
         className="absolute -right-6 bottom-0 h-[62%] w-[60%] opacity-30"
         viewBox="0 0 300 140"
@@ -31,13 +24,12 @@ function Backdrop() {
       >
         <defs>
           <linearGradient id="summary-area" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7958F5" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#7958F5" stopOpacity="0" />
+            <stop offset="0%" stopColor="#5592D8" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#5592D8" stopOpacity="0" />
           </linearGradient>
           <linearGradient id="summary-line" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#7958F5" stopOpacity="0" />
-            <stop offset="60%" stopColor="#A893FF" />
-            <stop offset="100%" stopColor="#22D3EE" />
+            <stop offset="0%" stopColor="#5592D8" stopOpacity="0" />
+            <stop offset="100%" stopColor="#5592D8" />
           </linearGradient>
         </defs>
         <path
@@ -90,9 +82,9 @@ export function MonthSummaryCard({
       </div>
 
       <div className="relative max-w-sm">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-primary/25" role="img" aria-label={`Despesas consomem ${formatPercent(expenseShare * 100)} da receita`}>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-series-1/35" role="img" aria-label={`Despesas consomem ${formatPercent(expenseShare * 100)} da receita`}>
           <motion.div
-            className="h-full rounded-full bg-warning/90"
+            className="h-full rounded-full bg-series-2"
             initial={{ width: 0 }}
             animate={{ width: `${expenseShare * 100}%` }}
             transition={{ duration: motionTokens.chartDrawMs / 1000, ease: motionTokens.ease, delay: 0.15 }}
@@ -101,14 +93,14 @@ export function MonthSummaryCard({
         <dl className="mt-3 grid grid-cols-2 gap-3 text-xs">
           <div>
             <dt className="flex items-center gap-1.5 text-muted">
-              <span className="h-2 w-2 rounded-full bg-primary-light" aria-hidden="true" />
+              <span className="h-2 w-2 rounded-full bg-series-1" aria-hidden="true" />
               Receita
             </dt>
             <dd className="mt-0.5 font-semibold text-fg tabular-nums">{formatBRL(revenue)}</dd>
           </div>
           <div>
             <dt className="flex items-center gap-1.5 text-muted">
-              <span className="h-2 w-2 rounded-full bg-warning" aria-hidden="true" />
+              <span className="h-2 w-2 rounded-full bg-series-2" aria-hidden="true" />
               Despesas
             </dt>
             <dd className="mt-0.5 font-semibold text-fg tabular-nums">{formatBRL(expenses)}</dd>

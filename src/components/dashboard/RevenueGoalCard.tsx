@@ -39,10 +39,10 @@ export function RevenueGoalCard({ goal }: { goal: SatisfactionRateData }) {
             valuePct={goal.value}
             gradientId="revenueGoalGradient"
             gradientStops={[
-              { offset: 0, color: "rgba(121,88,245,0.15)" },
-              { offset: 100, color: colors.primary },
+              { offset: 0, color: "rgba(85,146,216,0.15)" },
+              { offset: 100, color: colors.series1 },
             ]}
-            capColor={colors.primaryLight}
+            capColor={colors.series1}
             fromDeg={261}
           >
             <span className="absolute bottom-1/2 left-1/2 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-primary/15 text-primary-light ring-1 ring-inset ring-primary/30">

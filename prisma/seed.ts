@@ -156,6 +156,14 @@ async function main() {
       { name: "Atendimento ao cliente", icon: "headphones", members: "DM,EK,FR", budgetCents: reais(98_000), completion: 100, status: "done", order: 3 },
       { name: "Logística e frete", icon: "truck", members: "HN,IO", budgetCents: null, completion: 18, status: "working", order: 4 },
       { name: "Programa de fidelidade", icon: "gift", members: "PQ,RS", budgetCents: reais(64_000), completion: 35, status: "cancelled", order: 5 },
+      { name: "Migração do ERP", icon: "server", members: "LP,GO", budgetCents: reais(310_000), completion: 47, status: "working", order: 6 },
+      { name: "Auditoria fiscal 2026", icon: "scale", members: "BF,MC", budgetCents: reais(52_000), completion: 100, status: "done", order: 7 },
+      { name: "Treinamento comercial", icon: "users", members: "CR,TA,VM", budgetCents: reais(36_500), completion: 81, status: "working", order: 8 },
+      { name: "Abertura de filial em Recife", icon: "building", members: "AB,JS", budgetCents: reais(540_000), completion: 22, status: "working", order: 9 },
+      { name: "Campanha de Black Friday", icon: "megaphone", members: "MC,RA", budgetCents: reais(120_000), completion: 100, status: "done", order: 10 },
+      { name: "Renovação de frota", icon: "truck", members: "HN,PS", budgetCents: reais(210_000), completion: 9, status: "working", order: 11 },
+      { name: "Painel de indicadores (BI)", icon: "chart-line", members: "LP,JS,CR", budgetCents: reais(78_000), completion: 58, status: "working", order: 12 },
+      { name: "Clube de benefícios", icon: "gift", members: "PQ", budgetCents: null, completion: 12, status: "cancelled", order: 13 },
     ],
   });
 
@@ -168,6 +176,16 @@ async function main() {
       { title: "Infraestrutura em nuvem", description: "Tecnologia", amountCents: -reais(8_920.4), date: hoursAgo(50), color: "warning", icon: "server", order: 3 },
       { title: "Impostos (DAS)", description: "Tributos", amountCents: -reais(21_304.15), date: hoursAgo(98), color: "danger", icon: "scale", order: 4 },
       { title: "Reembolso de fornecedor", description: "Ajustes", amountCents: reais(1_150.0), date: hoursAgo(122), color: "info", icon: "refresh", order: 5 },
+      { title: "Recebimento do pedido #48177", description: "Vendas online", amountCents: reais(8_730.9), date: hoursAgo(140), color: "success", icon: "arrow-in", order: 6 },
+      { title: "Aluguel do escritório", description: "Instalações", amountCents: -reais(18_500.0), date: hoursAgo(165), color: "warning", icon: "building", order: 7 },
+      { title: "Contrato corporativo #2091", description: "Contratos B2B", amountCents: reais(52_300.0), date: hoursAgo(190), color: "success", icon: "landmark", order: 8 },
+      { title: "Campanha de mídia paga", description: "Marketing", amountCents: -reais(14_200.0), date: hoursAgo(214), color: "danger", icon: "megaphone", order: 9 },
+      { title: "Licenças de software", description: "Tecnologia", amountCents: -reais(4_870.0), date: hoursAgo(238), color: "warning", icon: "server", order: 10 },
+      { title: "Recebimento do pedido #48102", description: "Vendas online", amountCents: reais(6_415.5), date: hoursAgo(262), color: "success", icon: "arrow-in", order: 11 },
+      { title: "Frete de distribuição", description: "Logística", amountCents: -reais(3_980.75), date: hoursAgo(290), color: "danger", icon: "truck", order: 12 },
+      { title: "Rendimento de aplicação", description: "Financeiro", amountCents: reais(2_640.3), date: hoursAgo(315), color: "info", icon: "trending-up", order: 13 },
+      { title: "Benefícios da equipe", description: "Pessoal", amountCents: -reais(27_900.0), date: hoursAgo(340), color: "danger", icon: "users", order: 14 },
+      { title: "Estorno de cobrança", description: "Ajustes", amountCents: -reais(890.0), date: hoursAgo(366), color: "dark", icon: "refresh", order: 15 },
     ],
   });
 
@@ -181,11 +199,25 @@ async function main() {
       { name: "Beatriz Fernandes", email: "beatriz.fernandes@finova.example", avatarColor: "danger", function: "Contadora", department: "Contabilidade", status: "offline", employed: "04/10/2021", order: 4 },
       { name: "Gabriel Oliveira", email: "gabriel.oliveira@finova.example", avatarColor: "dark", function: "Analista de risco", department: "Crédito", status: "offline", employed: "14/09/2020", order: 5 },
       { name: "Camila Ribeiro", email: "camila.ribeiro@finova.example", avatarColor: "info", function: "Product designer", department: "Produto", status: "online", employed: "02/02/2022", order: 6 },
+      { name: "Thiago Andrade", email: "thiago.andrade@finova.example", avatarColor: "primary", function: "Analista de tesouraria", department: "Tesouraria", status: "online", employed: "08/03/2021", order: 7 },
+      { name: "Vanessa Moreira", email: "vanessa.moreira@finova.example", avatarColor: "success", function: "Coordenadora comercial", department: "Vendas", status: "offline", employed: "17/07/2019", order: 8 },
+      { name: "Pedro Santos", email: "pedro.santos@finova.example", avatarColor: "warning", function: "Analista de compras", department: "Suprimentos", status: "online", employed: "29/05/2022", order: 9 },
+      { name: "Larissa Castro", email: "larissa.castro@finova.example", avatarColor: "danger", function: "Advogada tributária", department: "Jurídico", status: "offline", employed: "12/11/2020", order: 10 },
+      { name: "Henrique Nogueira", email: "henrique.nogueira@finova.example", avatarColor: "dark", function: "Gerente de logística", department: "Operações", status: "online", employed: "03/06/2016", order: 11 },
+      { name: "Isabela Martins", email: "isabela.martins@finova.example", avatarColor: "info", function: "Analista de cobrança", department: "Contas a receber", status: "online", employed: "21/01/2023", order: 12 },
+      { name: "Diego Carvalho", email: "diego.carvalho@finova.example", avatarColor: "primary", function: "Cientista de dados", department: "Tecnologia", status: "offline", employed: "15/08/2021", order: 13 },
+      { name: "Fernanda Rocha", email: "fernanda.rocha@finova.example", avatarColor: "success", function: "Gerente de RH", department: "Pessoas", status: "online", employed: "06/04/2018", order: 14 },
+      { name: "André Barbosa", email: "andre.barbosa@finova.example", avatarColor: "warning", function: "Controller", department: "Controladoria", status: "offline", employed: "27/10/2017", order: 15 },
+      { name: "Patrícia Queiroz", email: "patricia.queiroz@finova.example", avatarColor: "danger", function: "Analista de marketing", department: "Marketing", status: "online", employed: "10/02/2024", order: 16 },
+      { name: "Eduardo Klein", email: "eduardo.klein@finova.example", avatarColor: "dark", function: "Suporte ao cliente", department: "Atendimento", status: "offline", employed: "19/12/2022", order: 17 },
     ],
   });
 
   // ── Faturas da assinatura (1º dia de cada mês, mais recente primeiro) ──
-  const invoiceAmounts = [1_490.0, 1_490.0, 1_490.0, 1_320.5, 1_320.5, 1_189.0];
+  const invoiceAmounts = [
+    1_490.0, 1_490.0, 1_490.0, 1_320.5, 1_320.5, 1_189.0, 1_189.0,
+    1_189.0, 1_189.0, 990.0, 990.0, 990.0, 990.0, 990.0,
+  ];
   await prisma.invoice.createMany({
     data: invoiceAmounts.map((amount, i) => {
       const issuedAt = monthStart(-i);

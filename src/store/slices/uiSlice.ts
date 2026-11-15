@@ -2,11 +2,13 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface UiState {
   sidebarOpen: boolean;
+  sidebarCollapsed: boolean;
   direction: "ltr" | "rtl";
 }
 
 const initialState: UiState = {
   sidebarOpen: false,
+  sidebarCollapsed: false,
   direction: "ltr",
 };
 
@@ -23,11 +25,15 @@ const uiSlice = createSlice({
     toggleSidebar(state) {
       state.sidebarOpen = !state.sidebarOpen;
     },
+    toggleSidebarCollapsed(state) {
+      state.sidebarCollapsed = !state.sidebarCollapsed;
+    },
     setDirection(state, action: PayloadAction<"ltr" | "rtl">) {
       state.direction = action.payload;
     },
   },
 });
 
-export const { openSidebar, closeSidebar, toggleSidebar, setDirection } = uiSlice.actions;
+export const { openSidebar, closeSidebar, toggleSidebar, toggleSidebarCollapsed, setDirection } =
+  uiSlice.actions;
 export default uiSlice.reducer;
