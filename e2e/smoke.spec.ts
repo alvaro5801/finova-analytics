@@ -1,19 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
+import { ROUTES } from "./routes";
 
 /**
  * Smoke da Finova Analytics. Roda em 3 viewports (ver playwright.config.ts).
  * Valores monetários usam /R\$\s/ porque o Intl pt-BR insere espaço NÃO separável (U+00A0).
  */
-
-const ROUTES = [
-  { path: "/dashboard", heading: "Visão geral", ready: "Receita do mês" },
-  { path: "/tables", heading: "Relatórios", ready: "Equipe financeira" },
-  { path: "/billing", heading: "Faturamento", ready: "Histórico da assinatura" },
-  { path: "/profile", heading: "Perfil", ready: "Informações do perfil" },
-  { path: "/rtl", heading: "Prévia RTL", ready: "Receita semanal" },
-  { path: "/sign-in", heading: "Entrar", ready: "Acesse o painel" },
-  { path: "/sign-up", heading: "Criar conta", ready: "Comece a acompanhar" },
-];
 
 function collectErrors(page: Page) {
   const errors: string[] = [];
