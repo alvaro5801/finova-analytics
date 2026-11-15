@@ -43,7 +43,13 @@ export function BudgetsCard({ projects }: { projects: ProjectData[] }) {
         subtitle={`${done} concluídos · ${working} em execução`}
       />
 
-      <div className="-mx-6 mt-5 overflow-x-auto px-6">
+      {/* Focável para quem rola pelo teclado quando a tabela não cabe (WCAG 2.1.1). */}
+      <div
+        className="-mx-6 mt-5 overflow-x-auto rounded-lg px-6"
+        tabIndex={0}
+        role="region"
+        aria-label="Tabela de orçamentos por área"
+      >
         <table className="w-full min-w-[560px] table-fixed border-collapse text-left text-sm">
           <colgroup>
             <col className="w-[42%]" />

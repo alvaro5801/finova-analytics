@@ -23,7 +23,13 @@ export function AuthorsTable({ authors }: { authors: AuthorData[] }) {
   return (
     <Card>
       <CardHeader title="Equipe financeira" subtitle={`${authors.length} pessoas · ${online} online agora`} />
-      <div className="-mx-6 mt-5 overflow-x-auto px-6">
+      {/* Focável para quem rola pelo teclado quando a tabela não cabe (WCAG 2.1.1). */}
+      <div
+        className="-mx-6 mt-5 overflow-x-auto rounded-lg px-6"
+        tabIndex={0}
+        role="region"
+        aria-label="Tabela da equipe financeira"
+      >
         <table className="w-full min-w-[640px] border-collapse text-left text-sm">
           <thead>
             <tr className="text-[11px] uppercase tracking-[0.08em] text-muted">

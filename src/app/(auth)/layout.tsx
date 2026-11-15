@@ -23,7 +23,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       />
 
       <div className="relative z-10 w-full max-w-sm">
-        <Link href="/dashboard" className="mb-8 flex justify-center" aria-label="Finova Analytics: ir para o painel">
+        <Link href="/dashboard" className="mb-8 flex justify-center">
           <FinovaLogo />
         </Link>
         {children}
