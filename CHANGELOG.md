@@ -5,6 +5,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ## [Não lançado]
 
 ### Alterado
+- Dependabot: atualizações de versão mensais e agrupadas, com cooldown (3/7/30 dias para patch/minor/major); `@types/node` acompanha o Node 24; majors do TypeScript ficam para migração planejada ([ADR-0009](docs/decisoes/0009-politica-de-dependencias.md)).
 - CI: runners fixados em `ubuntu-24.04`, em vez de `ubuntu-latest`, que está migrando para o Ubuntu 26.
 
 ### Documentação

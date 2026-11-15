@@ -45,7 +45,7 @@ flowchart LR
 - **Deploy só depois dos gates** (`needs`), com smoke test pós-deploy em produção.
 - **Artefatos só em falha** (relatório HTML e traces do Playwright), com retenção de 14 dias.
 - **Sem segredo em código:** credenciais vêm de *secrets* e *variables* do GitHub.
-- **Dependabot** semanal para npm e Actions, com minor e patch agrupados e majors em PRs individuais.
+- **Dependabot:** correções de segurança imediatas; atualizações de versão mensais e agrupadas, com *cooldown* contra pacotes comprometidos. Política e regras de triagem no [ADR-0009](../decisoes/0009-politica-de-dependencias.md).
 
 ## Configuração (uma vez)
 

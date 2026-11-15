@@ -1,15 +1,24 @@
-# Atualizações automáticas de dependências (docs/operacao/ci-cd.md).
-# Cada PR do Dependabot passa pelos mesmos gates do CI antes de qualquer merge.
+# Política de dependências: docs/decisoes/0009-politica-de-dependencias.md
+#
+# - Atualizações de SEGURANÇA: imediatas. Não seguem esta agenda nem o cooldown
+#   (ativadas nas configurações do repositório).
+# - Atualizações de VERSÃO: mensais e agrupadas, com cooldown: o Dependabot espera
+#   a versão nova "assentar" antes de propor, para reduzir o risco de pacote comprometido.
+# Todo PR do Dependabot passa pelos mesmos gates do CI antes de qualquer merge.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
       time: "06:00"
       timezone: America/Sao_Paulo
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 5
+      semver-major-days: 30
+      semver-minor-days: 7
+      semver-patch-days: 3
     commit-message:
       prefix: "chore(deps)"
       prefix-development: "chore(dev-deps)"
@@ -20,15 +29,25 @@ updates:
       desenvolvimento:
         dependency-type: development
         update-types: [minor, patch]
-    # Atualizações major (ex.: Prisma 7) chegam em PRs individuais, para migração planejada.
+    ignore:
+      # Os tipos do Node acompanham o runtime do projeto (Node 24, ver .nvmrc).
+      # Sobem junto com o .nvmrc, numa mudança deliberada.
+      - dependency-name: "@types/node"
+        versions: [">=25"]
+      # TypeScript 7 (reescrita em Go) é troca de ferramenta: migração planejada à parte.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+    # Outras majors (ex.: Prisma 7, ver ADR-0008) chegam em PRs individuais e só entram
+    # com plano de migração.
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
       time: "06:00"
       timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "ci(deps)"
     groups:
