@@ -1,0 +1,281 @@
+# Pipeline de CI/CD da Finova Analytics: guia em docs/operacao/ci-cd.md, decisão em docs/decisoes/0007-pipeline-ci-cd.md
+#
+# Gates (todos obrigatórios antes do deploy):
+#   quality  → lint + tipos
+#   security → varredura de segredos (gitleaks) + npm audit de produção (crítico bloqueia)
+#   e2e      → Playwright em 3 viewports contra o build de produção
+# Deploy (Vercel CLI): preview em PR, produção em push na main, com smoke test pós-deploy.
+# Burn-in (testes instáveis): semanal, manual ou em PR com o rótulo "burn-in".
+#
+# Actions fixadas por SHA de commit (supply chain). O Dependabot mantém as versões atualizadas.
+
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 9 * * 1" # segunda, 06:00 em Brasília: burn-in e auditoria semanais
+  workflow_dispatch:
+    inputs:
+      burn_in:
+        description: "Rodar burn-in (detecção de testes instáveis)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Em PR, uma execução nova cancela a anterior. Na main, enfileira: nunca interrompe um deploy.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  quality:
+    name: Qualidade · lint e tipos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instala dependências
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tipos
+        run: npm run typecheck
+
+  security:
+    name: Segurança · segredos e dependências
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read # o gitleaks lista os commits do PR
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # histórico completo para a varredura de segredos
+          persist-credentials: false
+
+      - name: Varredura de segredos (gitleaks)
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Auditoria de dependências de produção (crítico bloqueia)
+        run: npm audit --omit=dev --audit-level=critical
+
+      - name: Relatório de vulnerabilidades altas (não bloqueia)
+        if: always()
+        run: |
+          {
+            echo "### npm audit (dependências de produção)"
+            echo '```'
+            npm audit --omit=dev --audit-level=high || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  e2e:
+    name: E2E · Playwright (3 viewports)
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instala dependências
+        run: npm ci
+
+      - name: Versão do Playwright
+        id: playwright
+        run: echo "version=$(npx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache dos navegadores
+        id: browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
+
+      - name: Instala Chromium
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Dependências de sistema do Chromium
+        if: steps.browsers.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Banco de teste (schema + seed)
+        run: npm run db:reset
+
+      - name: Testes E2E contra o build de produção
+        run: npm run test:e2e
+
+      - name: Publica relatório e traces (só em falha)
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  burn-in:
+    name: Burn-in · testes instáveis
+    needs: e2e
+    if: >-
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && inputs.burn_in) ||
+      contains(github.event.pull_request.labels.*.name, 'burn-in')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ITERATIONS: "5" # padrão TEA é 10; 5 cabe no orçamento de minutos do repositório privado
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instala dependências
+        run: npm ci
+
+      - name: Instala Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Banco de teste (schema + seed)
+        run: npm run db:reset
+
+      - name: Burn-in (suíte repetida, sem retries)
+        run: bash scripts/burn-in.sh
+
+      - name: Publica falhas do burn-in
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: burn-in-failures
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  deploy:
+    name: Deploy · Vercel
+    needs: [quality, security, e2e]
+    # Push na main = produção. PR do próprio repositório = preview (PRs de fork não recebem secrets).
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write # comenta a URL de preview no PR
+    concurrency:
+      group: vercel-${{ github.event_name == 'push' && 'production' || github.event.pull_request.number }}
+      cancel-in-progress: false
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_ENV: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      PROD_FLAG: ${{ github.event_name == 'push' && '--prod' || '' }}
+    steps:
+      - name: Verifica configuração da Vercel
+        id: config
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Deploy ignorado::Configure o secret VERCEL_TOKEN e as variáveis VERCEL_ORG_ID e VERCEL_PROJECT_ID (docs/operacao/ci-cd.md)."
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.config.outputs.enabled == 'true'
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.config.outputs.enabled == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instala a Vercel CLI (versão fixa)
+        if: steps.config.outputs.enabled == 'true'
+        run: npm install --global vercel@65.16.0
+
+      - name: Baixa a configuração e as variáveis do ambiente
+        if: steps.config.outputs.enabled == 'true'
+        run: vercel pull --yes --environment="$VERCEL_ENV" --token="$VERCEL_TOKEN"
+
+      - name: Build
+        if: steps.config.outputs.enabled == 'true'
+        run: vercel build $PROD_FLAG --token="$VERCEL_TOKEN"
+
+      - name: Deploy
+        id: deploy
+        if: steps.config.outputs.enabled == 'true'
+        run: |
+          url="$(vercel deploy --prebuilt $PROD_FLAG --token="$VERCEL_TOKEN")"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          {
+            echo "### 🚀 Deploy de ${VERCEL_ENV}"
+            echo "$url"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke test pós-deploy (produção)
+        # Previews ficam atrás da Deployment Protection da Vercel; o smoke roda na URL pública de produção.
+        if: steps.config.outputs.enabled == 'true' && env.VERCEL_ENV == 'production'
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-delay 5 --retry-all-errors \
+            "$DEPLOY_URL/api/stats" | grep -q '"format":"currency"' \
+            || { echo "::error title=Smoke falhou::/api/stats não respondeu com o schema atual. Confira o banco Turso (docs/operacao/deploy.md)."; exit 1; }
+          curl --fail --silent --show-error --output /dev/null "$DEPLOY_URL/dashboard"
+
+      - name: Comenta a URL de preview no PR
+        if: steps.config.outputs.enabled == 'true' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          body="🚀 **Preview da Vercel:** $DEPLOY_URL (commit \`${SHA:0:7}\`)"
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --edit-last --body "$body" \
+            || gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
