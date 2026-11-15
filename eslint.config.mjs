@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ferramentas do BMAD e artefatos gerados (não são código do app).
+    ".claude/**",
+    "_bmad/**",
+    "_bmad-output/**",
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 

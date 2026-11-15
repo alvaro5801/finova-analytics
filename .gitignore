@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.cache/
 
 # next.js
 /.next/
@@ -41,3 +45,8 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# BMAD: ferramentas e artefatos de trabalho ficam locais (docs/decisoes/0006)
+/_bmad/
+/_bmad-output/
+/.claude/
