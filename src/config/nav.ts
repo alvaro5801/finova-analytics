@@ -1,11 +1,10 @@
 import type { LucideIcon } from "lucide-react";
+import { normalizeText } from "@/lib/filters";
 import {
   Languages,
   LayoutDashboard,
-  LogIn,
   Receipt,
   Table2,
-  UserPlus,
   UserRound,
 } from "lucide-react";
 
@@ -45,8 +44,6 @@ export const mainNavItems: NavItem[] = [
 
 export const accountNavItems: NavItem[] = [
   { label: "Perfil", href: "/profile", icon: UserRound, keywords: ["conta", "configuracoes", "usuario"] },
-  { label: "Entrar", href: "/sign-in", icon: LogIn, keywords: ["login", "acesso", "sign in"] },
-  { label: "Criar conta", href: "/sign-up", icon: UserPlus, keywords: ["cadastro", "registro", "sign up"] },
 ];
 
 /** D3: a prévia RTL continua acessível, mas fora do menu principal. */
@@ -62,20 +59,15 @@ export const navSections: NavSection[] = [
 
 export const allNavItems = [...mainNavItems, ...accountNavItems, ...otherNavItems];
 
-function normalize(text: string) {
-  return text
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .trim();
-}
+/** A busca lista só as páginas do painel; a prévia RTL fica apenas na sidebar. */
+const searchableNavItems = [...mainNavItems, ...accountNavItems];
 
 /** Busca de páginas: casa rótulo ou palavras-chave, ignorando acentos e caixa. */
 export function searchNavItems(query: string): NavItem[] {
-  const q = normalize(query);
-  if (!q) return allNavItems;
-  return allNavItems.filter(
+  const q = normalizeText(query);
+  if (!q) return searchableNavItems;
+  return searchableNavItems.filter(
     (item) =>
-      normalize(item.label).includes(q) || item.keywords?.some((k) => normalize(k).includes(q)),
+      normalizeText(item.label).includes(q) || item.keywords?.some((k) => normalizeText(k).includes(q)),
   );
 }

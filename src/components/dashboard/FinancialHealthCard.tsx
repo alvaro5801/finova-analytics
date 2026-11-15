@@ -39,7 +39,7 @@ export function FinancialHealthCard({ data }: { data: ReferralResponse }) {
               valuePct={scorePct}
               gradientId="healthGaugeGradient"
               gradientStops={[
-                { offset: 0, color: "rgba(34,211,238,0.12)" },
+                { offset: 0, color: "rgba(94,202,142,0.12)" },
                 { offset: 100, color: colors.success },
               ]}
               capColor={colors.success}

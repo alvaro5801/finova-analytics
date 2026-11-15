@@ -1,9 +1,14 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
+import { Pagination, usePagination } from "@/components/ui/Pagination";
+import { SegmentedControl, type SegmentOption } from "@/components/ui/SegmentedControl";
+import { ClearFiltersButton, EmptyResults, FilterStatus, SearchField, ToggleChip } from "@/components/ui/Filters";
+import { filterBudgets, type BudgetFilters } from "@/lib/filters";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatBRL } from "@/lib/format";
 import { renderIcon } from "@/lib/icon-map";
@@ -32,92 +37,149 @@ function Owners({ members }: { members: string }) {
   );
 }
 
-export function BudgetsCard({ projects }: { projects: ProjectData[] }) {
+const STATUS_FILTERS: SegmentOption<BudgetFilters["status"]>[] = [
+  { value: "all", label: "Todos" },
+  { value: "working", label: "Em execução" },
+  { value: "done", label: "Concluídos" },
+  { value: "cancelled", label: "Cancelados" },
+];
+
+const NO_FILTERS: BudgetFilters = { status: "all", query: "", noBudget: false };
+
+/** `filterable`: a versão completa (Relatórios) tem filtros; a da visão geral fica compacta. */
+export function BudgetsCard({ projects, filterable = false }: { projects: ProjectData[]; filterable?: boolean }) {
   const done = projects.filter((p) => p.status === "done").length;
   const working = projects.filter((p) => p.status === "working").length;
+  const [filters, setFilters] = useState(NO_FILTERS);
+  const filtered = useMemo(() => filterBudgets(projects, filters), [projects, filters]);
+  const pagination = usePagination(filtered);
+  const active = filters.status !== "all" || filters.query !== "" || filters.noBudget;
+
+  const update = (patch: Partial<BudgetFilters>) => {
+    setFilters((current) => ({ ...current, ...patch }));
+    pagination.setPage(1);
+  };
+  const clear = () => update(NO_FILTERS);
 
   return (
     <Card className="flex h-full flex-col">
-      <CardHeader
-        title="Orçamentos por área"
-        subtitle={`${done} concluídos · ${working} em execução`}
-      />
+      <CardHeader title="Orçamentos por área" subtitle={`${done} concluídos · ${working} em execução`} />
+
+      {filterable && (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <SearchField
+            label="Buscar áreas"
+            placeholder="Buscar área"
+            value={filters.query}
+            onChange={(query) => update({ query })}
+          />
+          <SegmentedControl
+            label="Status do orçamento"
+            options={STATUS_FILTERS}
+            value={filters.status}
+            onChange={(status) => update({ status })}
+          />
+          <ToggleChip pressed={filters.noBudget} onChange={(noBudget) => update({ noBudget })}>
+            Sem orçamento
+          </ToggleChip>
+          {active && <ClearFiltersButton onClick={clear} />}
+          <FilterStatus count={filtered.length} total={projects.length} />
+        </div>
+      )}
 
       {/* Focável para quem rola pelo teclado quando a tabela não cabe (WCAG 2.1.1). */}
-      <div
-        className="-mx-6 mt-5 overflow-x-auto rounded-lg px-6"
-        tabIndex={0}
-        role="region"
-        aria-label="Tabela de orçamentos por área"
-      >
-        <table className="w-full min-w-[560px] table-fixed border-collapse text-left text-sm">
-          <colgroup>
-            <col className="w-[42%]" />
-            <col className="w-[18%]" />
-            <col className="w-[20%]" />
-            <col className="w-[20%]" />
-          </colgroup>
-          <thead>
-            <tr className="text-[11px] uppercase tracking-[0.08em] text-muted">
-              <th scope="col" className="pb-3 font-medium">Área</th>
-              <th scope="col" className="pb-3 font-medium">Responsáveis</th>
-              <th scope="col" className="pb-3 font-medium">Orçamento</th>
-              <th scope="col" className="pb-3 font-medium">Execução</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map((project, i) => {
-              const status = STATUS[project.status] ?? STATUS.working;
-              return (
-                <motion.tr
-                  key={project.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: motionTokens.base, delay: i * 0.04, ease: motionTokens.ease }}
-                  className="border-t border-line transition-colors duration-200 hover:bg-white/[0.02]"
-                >
-                  <td className="py-3 pe-4">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-muted ring-1 ring-inset ring-line">
-                        {renderIcon(project.icon, { size: 16 })}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-fg">{project.name}</p>
-                        <p className={clsx("text-xs", status.chip)}>{status.label}</p>
+      {filtered.length === 0 ? (
+        <EmptyResults message="Nenhuma área encontrada." onClear={clear} />
+      ) : (
+        <div
+          className="-mx-6 mt-5 overflow-x-auto rounded-lg px-6"
+          tabIndex={0}
+          role="region"
+          aria-label="Tabela de orçamentos por área"
+        >
+          <table className="w-full min-w-[560px] table-fixed border-collapse text-left text-sm">
+            <colgroup>
+              <col className="w-[42%]" />
+              <col className="w-[18%]" />
+              <col className="w-[20%]" />
+              <col className="w-[20%]" />
+            </colgroup>
+            <thead>
+              <tr className="text-[11px] uppercase tracking-[0.08em] text-muted">
+                <th scope="col" className="pb-3 font-medium">
+                  Área
+                </th>
+                <th scope="col" className="pb-3 font-medium">
+                  Responsáveis
+                </th>
+                <th scope="col" className="pb-3 font-medium">
+                  Orçamento
+                </th>
+                <th scope="col" className="pb-3 font-medium">
+                  Execução
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {pagination.items.map((project, i) => {
+                const status = STATUS[project.status] ?? STATUS.working;
+                return (
+                  <motion.tr
+                    key={project.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: motionTokens.base, delay: i * 0.04, ease: motionTokens.ease }}
+                    className="border-t border-line transition-colors duration-200 hover:bg-white/[0.02]"
+                  >
+                    <td className="py-3 pe-4">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-muted ring-1 ring-inset ring-line">
+                          {renderIcon(project.icon, { size: 16 })}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-fg">{project.name}</p>
+                          <p className={clsx("text-xs", status.chip)}>{status.label}</p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3 pe-4">
-                    <Owners members={project.members} />
-                  </td>
-                  <td className="py-3 pe-4 font-medium tabular-nums">
-                    {project.budgetCents === null ? (
-                      <span className="text-muted">Não definido</span>
-                    ) : (
-                      <span className="text-fg">{formatBRL(project.budgetCents)}</span>
-                    )}
-                  </td>
-                  <td className="py-3 pe-2">
-                    <span className="text-xs font-semibold text-fg tabular-nums">{project.completion}%</span>
-                    <div className="mt-1.5 h-1.5 w-full max-w-[120px] overflow-hidden rounded-full bg-white/[0.06]">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${project.completion}%` }}
-                        transition={{
-                          duration: motionTokens.chartDrawMs / 1000,
-                          delay: 0.15 + i * 0.04,
-                          ease: motionTokens.ease,
-                        }}
-                        className={clsx("h-full rounded-full", status.bar)}
-                      />
-                    </div>
-                  </td>
-                </motion.tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    </td>
+                    <td className="py-3 pe-4">
+                      <Owners members={project.members} />
+                    </td>
+                    <td className="py-3 pe-4 font-medium tabular-nums">
+                      {project.budgetCents === null ? (
+                        <span className="text-muted">Não definido</span>
+                      ) : (
+                        <span className="text-fg">{formatBRL(project.budgetCents)}</span>
+                      )}
+                    </td>
+                    <td className="py-3 pe-2">
+                      <span className="text-xs font-semibold text-fg tabular-nums">{project.completion}%</span>
+                      <div className="mt-1.5 h-1.5 w-full max-w-[120px] overflow-hidden rounded-full bg-white/[0.06]">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${project.completion}%` }}
+                          transition={{
+                            duration: motionTokens.chartDrawMs / 1000,
+                            delay: 0.15 + i * 0.04,
+                            ease: motionTokens.ease,
+                          }}
+                          className={clsx("h-full rounded-full", status.bar)}
+                        />
+                      </div>
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <Pagination
+        {...pagination}
+        onPageChange={pagination.setPage}
+        label="Paginação dos orçamentos por área"
+        className="mt-auto"
+      />
     </Card>
   );
 }

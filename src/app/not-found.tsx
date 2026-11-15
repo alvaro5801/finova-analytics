@@ -13,7 +13,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/dashboard"
-        className="fn-btn-primary fn-press mt-8 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white"
+        className="fn-btn-primary fn-press mt-8 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
       >
         <ArrowLeft size={16} aria-hidden="true" />
         Voltar para a visão geral

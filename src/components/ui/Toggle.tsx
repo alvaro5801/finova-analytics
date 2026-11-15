@@ -21,7 +21,7 @@ export function Toggle({
       onClick={() => onChange(!checked)}
       className={clsx(
         "relative h-6 w-11 shrink-0 rounded-full ring-1 ring-inset transition-colors duration-200",
-        checked ? "bg-primary ring-primary/50" : "bg-white/[0.08] ring-line-strong",
+        checked ? "bg-success ring-success/50" : "bg-white/[0.08] ring-line-strong",
       )}
     >
       <motion.span

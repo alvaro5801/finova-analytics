@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Bell, LogIn, Menu } from "lucide-react";
+import { Bell, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { PageSearch } from "@/components/layout/PageSearch";
 import { allNavItems } from "@/config/nav";
 import { motionTokens } from "@/lib/tokens";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { toggleSidebar } from "@/store/slices/uiSlice";
+import { toggleSidebar, toggleSidebarCollapsed } from "@/store/slices/uiSlice";
 
 function currentLabel(pathname: string) {
   return allNavItems.find((item) => item.href === pathname)?.label ?? "Visão geral";
@@ -31,6 +31,7 @@ export function Navbar() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+  const sidebarCollapsed = useAppSelector((state) => state.ui.sidebarCollapsed);
   const label = currentLabel(pathname);
 
   return (
@@ -47,6 +48,19 @@ export function Navbar() {
           className={`${iconButton} lg:hidden`}
         >
           <Menu size={18} />
+        </button>
+        <button
+          onClick={() => dispatch(toggleSidebarCollapsed())}
+          aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+          aria-expanded={!sidebarCollapsed}
+          aria-controls="sidebar-desktop"
+          className={`${iconButton} hidden lg:flex`}
+        >
+          {sidebarCollapsed ? (
+            <PanelLeftOpen size={18} aria-hidden="true" className="rtl:-scale-x-100" />
+          ) : (
+            <PanelLeftClose size={18} aria-hidden="true" className="rtl:-scale-x-100" />
+          )}
         </button>
         <div className="min-w-0">
           <p className="text-xs font-medium text-muted">
@@ -73,7 +87,7 @@ export function Navbar() {
           <Bell size={17} />
         </button>
 
-        {user ? (
+        {user && (
           <Link
             href="/profile"
             className="flex items-center gap-2 rounded-xl py-1 pe-1 ps-1 transition-colors duration-200 hover:bg-white/[0.06] md:pe-3"
@@ -84,14 +98,6 @@ export function Navbar() {
             <span className="hidden max-w-[10rem] truncate text-sm font-medium text-fg md:inline">
               {user.name}
             </span>
-          </Link>
-        ) : (
-          <Link
-            href="/sign-in"
-            className="flex items-center gap-1.5 rounded-xl border border-line px-3 py-2 text-xs font-semibold text-fg transition-colors duration-200 hover:border-primary/50 hover:bg-primary/10"
-          >
-            <LogIn size={14} aria-hidden="true" />
-            Entrar
           </Link>
         )}
       </div>

@@ -16,19 +16,19 @@ export function FinovaMark({ size = 32, className }: { size?: number; className?
     >
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#7958F5" />
-          <stop offset="1" stopColor="#22D3EE" />
+          <stop stopColor="#6CC7AC" />
+          <stop offset="1" stopColor="#4EA88E" />
         </linearGradient>
       </defs>
       <rect width="32" height="32" rx="9" fill={`url(#${gradientId})`} />
       <path
         d="M11 23V9.5h9.5M11 16h6.5"
-        stroke="#fff"
+        stroke="#10100D"
         strokeWidth="2.6"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M23.5 18.5Q24 21 26.5 21.5Q24 22 23.5 24.5Q23 22 20.5 21.5Q23 21 23.5 18.5Z" fill="#fff" />
+      <path d="M23.5 18.5Q24 21 26.5 21.5Q24 22 23.5 24.5Q23 22 20.5 21.5Q23 21 23.5 18.5Z" fill="#10100D" />
     </svg>
   );
 }

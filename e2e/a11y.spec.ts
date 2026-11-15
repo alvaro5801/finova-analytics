@@ -66,4 +66,14 @@ test.describe("acessibilidade (WCAG A/AA)", () => {
     await settle(page);
     await expectNoViolations(page);
   });
+
+  test("sidebar recolhida: sem violações", async ({ page }) => {
+    test.skip(page.viewportSize()!.width < 1024, "a sidebar retrátil só existe no desktop");
+    await gotoReady(page, "/dashboard");
+    await expect(page.getByText("Receita do mês").first()).toBeVisible();
+    await page.getByRole("button", { name: "Recolher menu" }).click();
+    await expect(page.getByRole("button", { name: "Expandir menu" })).toBeVisible();
+    await settle(page);
+    await expectNoViolations(page);
+  });
 });

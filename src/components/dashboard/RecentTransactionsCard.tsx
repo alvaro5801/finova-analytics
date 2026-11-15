@@ -1,23 +1,81 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
+import { Pagination, usePagination } from "@/components/ui/Pagination";
+import { SegmentedControl, type SegmentOption } from "@/components/ui/SegmentedControl";
+import {
+  ClearFiltersButton,
+  EmptyResults,
+  FilterStatus,
+  SearchField,
+  SelectField,
+} from "@/components/ui/Filters";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { filterTransactions, uniqueSorted, type TransactionFilters, type TransactionType } from "@/lib/filters";
 import { formatBRL, formatDateTime, formatSignedBRL } from "@/lib/format";
 import { renderIcon } from "@/lib/icon-map";
 import { motionTokens } from "@/lib/tokens";
 import { toneChip } from "@/lib/tones";
 import type { OrderEventData } from "@/types/dashboard";
 
+const TYPES: SegmentOption<TransactionType>[] = [
+  { value: "all", label: "Todas" },
+  { value: "in", label: "Entradas" },
+  { value: "out", label: "Saídas" },
+];
+
+const NO_FILTERS: TransactionFilters = { type: "all", query: "", category: "" };
+
 export function RecentTransactionsCard({ orders }: { orders: OrderEventData[] }) {
-  const inflow = orders.filter((o) => o.amountCents > 0).reduce((sum, o) => sum + o.amountCents, 0);
-  const outflow = orders.filter((o) => o.amountCents < 0).reduce((sum, o) => sum - o.amountCents, 0);
+  const [filters, setFilters] = useState(NO_FILTERS);
+  const categories = useMemo(() => uniqueSorted(orders.map((o) => o.description)), [orders]);
+  const filtered = useMemo(() => filterTransactions(orders, filters), [orders, filters]);
+  const pagination = usePagination(filtered);
+  const active = filters.type !== "all" || filters.query !== "" || filters.category !== "";
+
+  // Os totais acompanham o filtro: "quanto saiu com Pessoal" vira leitura direta.
+  const inflow = filtered.filter((o) => o.amountCents > 0).reduce((sum, o) => sum + o.amountCents, 0);
+  const outflow = filtered.filter((o) => o.amountCents < 0).reduce((sum, o) => sum - o.amountCents, 0);
+
+  const update = (patch: Partial<TransactionFilters>) => {
+    setFilters((current) => ({ ...current, ...patch }));
+    pagination.setPage(1);
+  };
+  const clear = () => update(NO_FILTERS);
 
   return (
     <Card className="flex h-full flex-col">
       <CardHeader title="Transações recentes" />
+      <div className="mt-3 flex flex-col gap-2">
+        <SearchField
+          label="Buscar transações"
+          placeholder="Buscar por descrição ou categoria"
+          value={filters.query}
+          onChange={(query) => update({ query })}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <SegmentedControl
+            label="Tipo de transação"
+            options={TYPES}
+            value={filters.type}
+            onChange={(type) => update({ type })}
+          />
+          <SelectField
+            label="Categoria"
+            allLabel="Todas as categorias"
+            options={categories}
+            value={filters.category}
+            onChange={(category) => update({ category })}
+          />
+          {active && <ClearFiltersButton onClick={clear} />}
+        </div>
+        <FilterStatus count={filtered.length} total={orders.length} />
+      </div>
+
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
         <div className="fn-well rounded-lg px-3 py-2">
           <p className="text-muted">Entradas</p>
@@ -29,8 +87,9 @@ export function RecentTransactionsCard({ orders }: { orders: OrderEventData[] })
         </div>
       </div>
 
+      {filtered.length === 0 && <EmptyResults message="Nenhuma transação encontrada." onClear={clear} />}
       <ol className="mt-4 flex flex-col divide-y divide-line">
-        {orders.map((order, i) => {
+        {pagination.items.map((order, i) => {
           const incoming = order.amountCents > 0;
           return (
             <motion.li
@@ -66,6 +125,12 @@ export function RecentTransactionsCard({ orders }: { orders: OrderEventData[] })
           );
         })}
       </ol>
+      <Pagination
+        {...pagination}
+        onPageChange={pagination.setPage}
+        label="Paginação das transações recentes"
+        className="mt-auto"
+      />
     </Card>
   );
 }

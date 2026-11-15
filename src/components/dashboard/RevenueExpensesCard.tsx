@@ -61,11 +61,11 @@ export function RevenueExpensesCard({ points }: { points: SalesPointData[] }) {
 
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted">
         <span className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-primary-light" aria-hidden="true" />
+          <span className="h-2 w-2 rounded-full bg-series-1" aria-hidden="true" />
           Receita <span className="font-semibold text-fg tabular-nums">{formatBRLCompact(revenue)}</span>
         </span>
         <span className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+          <span className="h-2 w-2 rounded-full bg-series-2" aria-hidden="true" />
           Despesas <span className="font-semibold text-fg tabular-nums">{formatBRLCompact(expenses)}</span>
         </span>
       </div>
@@ -79,12 +79,12 @@ export function RevenueExpensesCard({ points }: { points: SalesPointData[] }) {
           <AreaChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
             <defs>
               <linearGradient id={`rev-${uid}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={colors.primary} stopOpacity={0.45} />
-                <stop offset="100%" stopColor={colors.primary} stopOpacity={0} />
+                <stop offset="0%" stopColor={colors.series1} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={colors.series1} stopOpacity={0} />
               </linearGradient>
               <linearGradient id={`exp-${uid}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={colors.accent} stopOpacity={0.2} />
-                <stop offset="100%" stopColor={colors.accent} stopOpacity={0} />
+                <stop offset="0%" stopColor={colors.series2} stopOpacity={0.2} />
+                <stop offset="100%" stopColor={colors.series2} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid stroke={colors.line} strokeDasharray="4 6" vertical={false} />
@@ -135,25 +135,24 @@ export function RevenueExpensesCard({ points }: { points: SalesPointData[] }) {
               type="monotone"
               dataKey="expensesCents"
               name="Despesas"
-              stroke={colors.accent}
+              stroke={colors.series2}
               strokeWidth={2}
               fill={`url(#exp-${uid})`}
-              activeDot={{ r: 4, fill: colors.accent, stroke: colors.surface, strokeWidth: 2 }}
+              activeDot={{ r: 4, fill: colors.series2, stroke: colors.surface, strokeWidth: 2 }}
               {...animation}
             />
             <Area
               type="monotone"
               dataKey="revenueCents"
               name="Receita"
-              stroke={colors.primaryLight}
+              stroke={colors.series1}
               strokeWidth={2.5}
               fill={`url(#rev-${uid})`}
               activeDot={{
                 r: 5,
-                fill: colors.primaryLight,
+                fill: colors.series1,
                 stroke: colors.surface,
                 strokeWidth: 2,
-                style: { filter: `drop-shadow(0 0 6px ${colors.primary})` },
               }}
               {...animation}
             />

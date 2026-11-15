@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { Building2, Mail, MapPin, Phone } from "lucide-react";
+import { useCallback, useState } from "react";
+import { Building2, Mail, MapPin, Pencil, Phone, ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
 import { Toggle } from "@/components/ui/Toggle";
-import { useAppSelector } from "@/store/hooks";
+import { AccountsCard } from "@/components/profile/AccountsCard";
+import { EditProfileDialog } from "@/components/profile/AccountDialogs";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { ROLE_LABEL, updateAccount, type AccountForm } from "@/store/slices/accountsSlice";
+import { setUser } from "@/store/slices/authSlice";
 
 const settingsItems = [
   { key: "budget", label: "Alertar quando uma área passar de 90% do orçamento", defaultChecked: true },
@@ -16,21 +20,34 @@ const settingsItems = [
   { key: "product", label: "Novidades do produto Finova", defaultChecked: false },
 ];
 
-/** Dados fictícios de demonstração (domínio e telefone reservados). */
-const infoItems = [
-  { icon: Mail, label: "E-mail", value: "marina.costa@finova.example" },
-  { icon: Phone, label: "Telefone", value: "+55 (11) 99999-0000" },
-  { icon: Building2, label: "Empresa", value: "Finova Demo Ltda." },
-  { icon: MapPin, label: "Local", value: "São Paulo, SP" },
-];
+const COMPANY = "Finova Demo Ltda.";
 
 export default function ProfilePage() {
+  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+  const accounts = useAppSelector((state) => state.accounts.accounts);
+  const account = useAppSelector((state) => state.accounts.accounts.find((a) => a.id === state.accounts.currentId))!;
+  const isAdmin = account.role === "admin";
+  const [editing, setEditing] = useState(false);
+  const closeEditing = useCallback(() => setEditing(false), []);
   const [settings, setSettings] = useState<Record<string, boolean>>(
     Object.fromEntries(settingsItems.map((s) => [s.key, s.defaultChecked])),
   );
 
-  const displayName = user?.name ?? "Marina Costa";
+  const saveProfile = (values: AccountForm & { phone: string; location: string }) => {
+    dispatch(updateAccount({ id: account.id, changes: values }));
+    // A navbar mostra o usuário da sessão; mantém o nome e o e-mail em sincronia.
+    if (user) dispatch(setUser({ ...user, name: values.name, email: values.email }));
+  };
+
+  const infoItems = [
+    { icon: Mail, label: "E-mail", value: account.email },
+    { icon: Phone, label: "Telefone", value: account.phone || "Não informado" },
+    { icon: Building2, label: "Empresa", value: COMPANY },
+    { icon: MapPin, label: "Local", value: account.location || "Não informado" },
+  ];
+
+  const displayName = account.name;
   const initials = displayName
     .split(" ")
     .filter(Boolean)
@@ -47,7 +64,7 @@ export default function ProfilePage() {
             className="h-28 w-full sm:h-36"
             style={{
               backgroundImage:
-                "radial-gradient(30rem 12rem at 85% 0%, rgb(34 211 238 / 0.35), transparent 70%), linear-gradient(120deg, #2a1f6b 0%, #4a34c9 45%, #7958f5 100%)",
+                "radial-gradient(30rem 12rem at 85% 0%, rgb(91 184 157 / 0.16), transparent 70%), linear-gradient(120deg, #1c1b18 0%, #24231f 100%)",
             }}
           />
           <div className="flex flex-col items-center gap-3 px-6 pb-6 sm:flex-row sm:items-end">
@@ -56,11 +73,28 @@ export default function ProfilePage() {
             </span>
             <div className="flex-1 text-center sm:text-start">
               <p className="text-lg font-semibold text-fg">{displayName}</p>
-              <p className="text-sm text-muted">Diretora financeira (CFO) · Finova Demo Ltda.</p>
+              <p className="text-sm text-muted">
+                {account.jobTitle || ROLE_LABEL[account.role]} · {COMPANY}
+              </p>
             </div>
-            <span className="rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-              Plano Business
-            </span>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {isAdmin && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-light">
+                  <ShieldCheck size={13} aria-hidden="true" /> Acesso admin
+                </span>
+              )}
+              <span className="rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+                Plano Business
+              </span>
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                aria-haspopup="dialog"
+                className="fn-press inline-flex items-center gap-1.5 rounded-xl border border-line px-3 py-1.5 text-xs font-semibold text-fg transition-colors duration-200 hover:border-primary/50 hover:bg-primary/10"
+              >
+                <Pencil size={13} aria-hidden="true" /> Editar perfil
+              </button>
+            </div>
           </div>
         </Card>
       </Reveal>
@@ -71,8 +105,7 @@ export default function ProfilePage() {
             <Card className="h-full">
               <CardHeader title="Informações do perfil" />
               <p className="mt-2 text-sm leading-relaxed text-muted">
-                Perfil de demonstração com dados fictícios. O nome exibido vem do estado global
-                (Redux) após o login simulado, e os indicadores do painel vêm da API seedada.
+                Perfil de demonstração com dados fictícios. As alterações ficam salvas durante a sessão.
               </p>
               <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {infoItems.map((item) => (
@@ -111,6 +144,20 @@ export default function ProfilePage() {
           </Reveal>
         </div>
       </div>
+
+      {isAdmin && (
+        <Reveal delay={0.18}>
+          <AccountsCard />
+        </Reveal>
+      )}
+
+      <EditProfileDialog
+        open={editing}
+        account={account}
+        emails={accounts.map((a) => a.email)}
+        onClose={closeEditing}
+        onSave={saveProfile}
+      />
     </div>
   );
 }
