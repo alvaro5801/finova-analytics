@@ -25,9 +25,14 @@ const percent = new Intl.NumberFormat(LOCALE, {
 
 const MINUS = "−";
 
-/** 12345678 → "R$ 123.456,78" */
+/**
+ * 12345678 → "R$ 123.456,78".
+ * Negativos usam o menos tipográfico (U+2212), o mesmo de `formatSignedBRL` e `formatDelta`:
+ * o Intl usaria o hífen comum (U+002D), o que deixaria dois sinais diferentes na mesma tela.
+ */
 export function formatBRL(cents: number) {
-  return brl.format(cents / 100);
+  const formatted = brl.format(Math.abs(cents) / 100);
+  return cents < 0 ? `${MINUS}${formatted}` : formatted;
 }
 
 /** 48632045 → "R$ 486,3 mil" (eixos e rótulos curtos). */
