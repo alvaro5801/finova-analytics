@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { StoreProvider } from "@/store/provider";
 import { MotionProvider } from "@/components/providers/MotionProvider";
+import { AppReadyMarker } from "@/components/providers/AppReadyMarker";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,7 +35,10 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-full">
         <StoreProvider>
-          <MotionProvider>{children}</MotionProvider>
+          <MotionProvider>
+            {children}
+            <AppReadyMarker />
+          </MotionProvider>
         </StoreProvider>
       </body>
     </html>
