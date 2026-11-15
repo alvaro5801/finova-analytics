@@ -39,6 +39,8 @@ export function FinovaLogo({ className, compact = false }: { className?: string;
       <FinovaMark size={compact ? 28 : 32} />
       <span className="flex flex-col leading-none">
         <span className="text-[15px] font-semibold tracking-tight text-fg">Finova</span>
+        {/* Espaço para o nome acessível ser "Finova Analytics" (num flex container ele não aparece). */}
+        {!compact && " "}
         {!compact && (
           <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.22em] text-muted">
             Analytics

@@ -77,7 +77,7 @@ function DemoNotice() {
 function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
   return (
     <div className="flex h-full flex-col overflow-y-auto px-4 py-5">
-      <Link href="/dashboard" onClick={onNavigate} className="px-2" aria-label="Finova Analytics: visão geral">
+      <Link href="/dashboard" onClick={onNavigate} className="px-2">
         <FinovaLogo />
       </Link>
 

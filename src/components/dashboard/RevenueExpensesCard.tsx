@@ -16,9 +16,9 @@ import type { SalesPointData } from "@/types/dashboard";
 type Period = "3" | "6" | "12";
 
 const PERIODS: SegmentOption<Period>[] = [
-  { value: "3", label: "3M", ariaLabel: "Últimos 3 meses" },
-  { value: "6", label: "6M", ariaLabel: "Últimos 6 meses" },
-  { value: "12", label: "12M", ariaLabel: "Últimos 12 meses" },
+  { value: "3", label: "3M", description: "últimos 3 meses" },
+  { value: "6", label: "6M", description: "últimos 6 meses" },
+  { value: "12", label: "12M", description: "últimos 12 meses" },
 ];
 
 const axisTick = { fill: colors.muted, fontSize: 11 };
