@@ -20,20 +20,20 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@libsql/client": "^0.17.4",
-    "@prisma/adapter-libsql": "^7.9.0",
+    "@libsql/client": "^0.18.0",
+    "@prisma/adapter-libsql": "^7.10.1",
     "@prisma/client": "^6.19.3",
-    "@reduxjs/toolkit": "^2.12.0",
+    "@reduxjs/toolkit": "^2.14.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.2",
-    "lucide-react": "^1.26.0",
+    "lucide-react": "^1.70.0",
     "next": "16.4.6",
     "prisma": "^6.19.3",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "react-redux": "^9.3.0",
-    "recharts": "^3.10.0",
-    "tsx": "^4.23.1"
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-redux": "^9.3.1",
+    "recharts": "^3.10.1",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
