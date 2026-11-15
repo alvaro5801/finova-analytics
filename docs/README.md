@@ -8,9 +8,9 @@ Esta é uma **documentação viva**: ela muda junto com o código. O README da r
 |---|---|
 | [Produto](produto/) | [PRD inicial](produto/prd-inicial.md) · [Quick Spec da fase 1](produto/quick-spec.md) |
 | [Decisões (ADRs)](decisoes/README.md) | Decisões de arquitetura e engenharia, com contexto e alternativas |
-| [Histórico](historico/) | O que foi feito em cada fase e por quê. [Fase 1](historico/2026-11-15-fase-1.md) |
+| [Histórico](historico/) | O que foi feito em cada fase e por quê. [Fase 1](historico/2026-11-15-fase-1.md) · [Repositório e CI/CD](historico/2026-11-15-repositorio-e-ci-cd.md) |
 | [Qualidade](qualidade/) | [Relatório de QA da fase 1](qualidade/relatorio-qa-fase-1.md) |
-| [Operação](operacao/) | [Deploy (Vercel + Turso)](operacao/deploy.md) |
+| [Operação](operacao/) | [Deploy (Vercel + Turso)](operacao/deploy.md) · [Pipeline de CI/CD](operacao/ci-cd.md) |
 | [Apresentação](apresentacao/) | [Roteiro de demo de 5 minutos](apresentacao/roteiro-demo.md) |
 | [Screenshots](screenshots/) | Capturas do build de produção |
 

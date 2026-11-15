@@ -10,6 +10,7 @@ Cada decisão que muda como o sistema é construído ganha um ADR curto, com o c
 | [0004](0004-e2e-com-playwright.md) | Smoke E2E com Playwright contra build de produção | Aceita |
 | [0005](0005-arquitetura-herdada-e-nomes-legados.md) | Preservar a arquitetura herdada e renomear só a camada de UI | Aceita |
 | [0006](0006-artefatos-bmad-locais.md) | Artefatos do BMAD ficam locais; só a documentação vai ao repositório | Aceita |
+| [0007](0007-pipeline-ci-cd.md) | Pipeline de CI/CD com GitHub Actions e deploy pela Vercel CLI | Aceita |
 
 ## Modelo
 

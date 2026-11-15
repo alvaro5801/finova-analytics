@@ -8,6 +8,10 @@
 | Banco | Turso (libSQL) | O SQLite local não persiste no serverless |
 | Conexão | `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` | Sem essas variáveis, o app cai para `prisma/dev.db` (só local) |
 
+## Como o deploy acontece
+
+O deploy é feito **pela pipeline de CI/CD**, depois que lint, tipos, segurança e E2E passam: preview em PR, produção em push na `main`. A integração Git automática da Vercel fica desligada no `vercel.json`. Configuração e secrets: [ci-cd.md](ci-cd.md).
+
 ## Primeira configuração
 
 1. Crie um banco no [Turso](https://turso.tech) e gere um token.

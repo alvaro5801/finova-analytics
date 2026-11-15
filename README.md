@@ -37,7 +37,9 @@ npm run dev        # http://localhost:3000
 ## Testes
 
 ```bash
+npm run ci:local          # mesmos gates do CI: lint, tipos, auditoria e E2E
 npm run lint
+npm run typecheck
 npm run test:e2e          # build de produção + 51 cenários (7 rotas × 3 viewports + fluxos)
 npm run test:e2e:report   # abre o relatório HTML do último run
 ```
@@ -88,6 +90,10 @@ Rotas em `src/app/api/*/route.ts`, com envelope `{ data }` ou `{ error: { messag
 | `POST /api/auth/sign-in` · `sign-up` | — | Login e cadastro simulados, com validação |
 
 Todas as rotas GET têm uma latência artificial de 350 a 750 ms (`simulateLatency`) para que os skeletons fiquem visíveis na demonstração.
+
+## CI/CD
+
+Todo PR e todo push na `main` passam pelos gates **Qualidade** (lint e tipos), **Segurança** (gitleaks e `npm audit`) e **E2E** (Playwright). Só então o deploy na Vercel acontece: preview no PR, produção na `main`, com smoke test. Guia e configuração dos secrets: [docs/operacao/ci-cd.md](docs/operacao/ci-cd.md).
 
 ## Deploy (Vercel + Turso)
 

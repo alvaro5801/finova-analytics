@@ -2,6 +2,16 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.2.1] - 2026-11-15
+
+### Segurança
+- Next.js e `eslint-config-next` atualizados de 16.2.11 para **16.4.6**. A versão anterior tinha RCEs críticas sem autenticação (GHSA-2464-fhr4-w9xw, GHSA-673q-mjm6-r5xr, GHSA-2xp9-vwfh-vxw4, GHSA-vcvr-r3jv-pc5j, GHSA-p293-qw3h-jr36).
+- Correções transitivas sem mudança de major (`npm audit fix`).
+
+### Adicionado
+- Pipeline de CI/CD: gates de qualidade, segurança e E2E; deploy pela Vercel CLI (preview e produção) com smoke test; burn-in semanal ([ADR-0007](docs/decisoes/0007-pipeline-ci-cd.md)).
+- Dependabot (npm e GitHub Actions), template de PR, `.nvmrc`, `npm run typecheck` e `npm run ci:local`.
+
 ## [0.2.0] - 2026-11-15
 
 Fase 1: o template Vision UI vira **Finova Analytics**. Detalhes em [docs/historico/2026-11-15-fase-1.md](docs/historico/2026-11-15-fase-1.md).
