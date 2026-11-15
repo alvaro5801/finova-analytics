@@ -4,9 +4,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "▶ 1/4 Lint";                          npm run lint
-echo "▶ 2/4 Tipos";                         npm run typecheck
-echo "▶ 3/4 Auditoria (crítico bloqueia)";  npm audit --omit=dev --audit-level=critical
-echo "▶ 4/4 E2E (build de produção)";       npm run test:e2e
+echo "▶ 1/5 Lint";                          npm run lint
+echo "▶ 2/5 Tipos";                         npm run typecheck
+echo "▶ 3/5 Testes unitários";              npm run test:unit
+echo "▶ 4/5 Auditoria (crítico bloqueia)";  npm audit --omit=dev --audit-level=critical
+echo "▶ 5/5 E2E (build de produção)";       npm run test:e2e
 
 echo "✅ Todos os gates do CI passaram localmente."
