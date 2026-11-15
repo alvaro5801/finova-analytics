@@ -4,6 +4,12 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Adicionado
+- Testes unitários de `src/lib/format.ts` com `node:test` (17 casos, sem dependência nova), rodando no job Qualidade do CI ([ADR-0010](docs/decisoes/0010-testes-unitarios-node-test.md)).
+
+### Corrigido
+- Valores negativos em `formatBRL` usavam o hífen (U+002D), enquanto o resto da interface usa o menos tipográfico (U+2212). Bug encontrado pelos novos testes unitários.
+
 ### Alterado
 - Dependabot: atualizações de versão mensais e agrupadas, com cooldown (3/7/30 dias para patch/minor/major); `@types/node` acompanha o Node 24; majors do TypeScript ficam para migração planejada ([ADR-0009](docs/decisoes/0009-politica-de-dependencias.md)).
 - CI: runners fixados em `ubuntu-24.04`, em vez de `ubuntu-latest`, que está migrando para o Ubuntu 26.

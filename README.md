@@ -37,9 +37,10 @@ npm run dev        # http://localhost:3000
 ## Testes
 
 ```bash
-npm run ci:local          # mesmos gates do CI: lint, tipos, auditoria e E2E
+npm run ci:local          # mesmos gates do CI: lint, tipos, unitários, auditoria e E2E
 npm run lint
 npm run typecheck
+npm run test:unit         # testes unitários (node:test, ~130 ms)
 npm run test:e2e          # build de produção + 51 cenários (7 rotas × 3 viewports + fluxos)
 npm run test:e2e:report   # abre o relatório HTML do último run
 ```
@@ -93,7 +94,7 @@ Todas as rotas GET têm uma latência artificial de 350 a 750 ms (`simulateLaten
 
 ## CI/CD
 
-Todo PR e todo push na `main` passam pelos gates **Qualidade** (lint e tipos), **Segurança** (gitleaks e `npm audit`) e **E2E** (Playwright). Só então o deploy na Vercel acontece: preview no PR, produção na `main`, com smoke test. Guia e configuração dos secrets: [docs/operacao/ci-cd.md](docs/operacao/ci-cd.md).
+Todo PR e todo push na `main` passam pelos gates **Qualidade** (lint, tipos e testes unitários), **Segurança** (gitleaks e `npm audit`) e **E2E** (Playwright). Só então o deploy na Vercel acontece: preview no PR, produção na `main`, com smoke test. Guia e configuração dos secrets: [docs/operacao/ci-cd.md](docs/operacao/ci-cd.md).
 
 ## Deploy (Vercel + Turso)
 
