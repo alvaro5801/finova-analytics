@@ -14,6 +14,7 @@ Cada decisão que muda como o sistema é construído ganha um ADR curto, com o c
 | [0008](0008-adiar-migracao-prisma-7.md) | Adiar a migração para o Prisma 7 e aceitar temporariamente uma vulnerabilidade alta na CLI | Aceita (temporária) |
 | [0009](0009-politica-de-dependencias.md) | Política de atualização de dependências (Dependabot) | Aceita |
 | [0010](0010-testes-unitarios-node-test.md) | Testes unitários com o test runner nativo do Node, sem dependência nova | Aceita |
+| [0011](0011-acessibilidade-automatizada-axe.md) | Acessibilidade automatizada com axe-core no E2E (WCAG A/AA) | Aceita |
 
 ## Modelo
 

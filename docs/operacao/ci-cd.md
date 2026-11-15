@@ -21,7 +21,7 @@ flowchart LR
 |---|---|---|
 | **Qualidade** | `npm run lint` + `npm run typecheck` + `npm run test:unit` | Sim |
 | **Segurança** | Segredos no histórico (gitleaks) e `npm audit` das dependências de produção | Sim, para segredo ou vulnerabilidade **crítica**. Altas viram aviso no resumo do job |
-| **E2E** | 51 cenários Playwright em 1440/768/390 px contra o build de produção, com o banco recriado pelo seed | Sim |
+| **E2E** | 78 cenários Playwright em 1440/768/390 px contra o build de produção, com o banco recriado pelo seed: smoke + acessibilidade WCAG A/AA com axe ([ADR-0011](../decisoes/0011-acessibilidade-automatizada-axe.md)) | Sim |
 | **Burn-in** | A suíte repetida 5× sem retries, para expor testes instáveis | Não (roda à parte) |
 | **Deploy** | Preview em PR; produção em push na `main`; smoke test em `/api/stats` e `/dashboard` | — |
 
