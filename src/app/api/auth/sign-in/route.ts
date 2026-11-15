@@ -9,20 +9,20 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return fail("Request body must be valid JSON.");
+    return fail("O corpo da requisição precisa ser um JSON válido.");
   }
 
   const { email, password } = (body ?? {}) as { email?: string; password?: string };
 
   if (!email || !EMAIL_RE.test(email)) {
-    return fail("Please enter a valid email address.");
+    return fail("Informe um e-mail válido.");
   }
   if (!password || password.length < 6) {
-    return fail("Password must be at least 6 characters.");
+    return fail("A senha precisa ter pelo menos 6 caracteres.");
   }
 
   return ok({
-    user: { name: "Demo User", email },
+    user: { name: "Marina Costa", email },
     token: "mock-jwt-token",
   });
 }

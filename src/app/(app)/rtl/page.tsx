@@ -1,124 +1,110 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Reveal } from "@/components/ui/Reveal";
 import { Card } from "@/components/ui/Card";
+import { CardHeader } from "@/components/ui/CardHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { SalesOverviewCard } from "@/components/dashboard/SalesOverviewCard";
+import { RevenueExpensesCard } from "@/components/dashboard/RevenueExpensesCard";
+import { motionTokens } from "@/lib/tokens";
+import { useAppDispatch } from "@/store/hooks";
+import { setDirection } from "@/store/slices/uiSlice";
 import type { SalesPointData, StatCardData } from "@/types/dashboard";
 
-const rtlStats: StatCardData[] = [
-  {
-    id: 1,
-    key: "money",
-    title: "Weekly Revenue",
-    value: "$12,400",
-    changePct: 18,
-    changeLabel: "since last week",
-    icon: "wallet",
-    color: "dark",
-    order: 0,
-  },
-  {
-    id: 2,
-    key: "users",
-    title: "New Signups",
-    value: "1,204",
-    changePct: 9,
-    changeLabel: "since last week",
-    icon: "globe",
-    color: "info",
-    order: 1,
-  },
-  {
-    id: 3,
-    key: "clients",
-    title: "Refunds",
-    value: "87",
-    changePct: -4,
-    changeLabel: "since last quarter",
-    icon: "file-text",
-    color: "success",
-    order: 2,
-  },
-  {
-    id: 4,
-    key: "sales",
-    title: "Conversion Rate",
-    value: "3.2%",
-    changePct: 6,
-    changeLabel: "since last month",
-    icon: "cart",
-    color: "primary",
-    order: 3,
-  },
+/** Conjunto alternativo e independente de dados fictícios (valores em centavos). */
+const previewStats: StatCardData[] = [
+  { id: 1, key: "revenue", title: "Receita semanal", value: 12_440_000, format: "currency", changePct: 18, changeLabel: "vs. semana anterior", icon: "trending-up", color: "primary", order: 0 },
+  { id: 2, key: "customers", title: "Novos clientes", value: 1204, format: "number", changePct: 9, changeLabel: "vs. semana anterior", icon: "users", color: "info", order: 1 },
+  { id: 3, key: "expenses", title: "Estornos", value: 1_874_050, format: "currency", changePct: -4, changeLabel: "vs. trimestre anterior", icon: "receipt", color: "warning", order: 2 },
+  { id: 4, key: "conversion", title: "Conversão", value: 320, format: "percent", changePct: 6, changeLabel: "vs. mês anterior", icon: "chart-line", color: "success", order: 3 },
 ];
 
-const rtlSales: SalesPointData[] = [
-  { id: 1, month: "Jan", value: 80, secondary: 140, order: 0 },
-  { id: 2, month: "Feb", value: 130, secondary: 110, order: 1 },
-  { id: 3, month: "Mar", value: 95, secondary: 160, order: 2 },
-  { id: 4, month: "Apr", value: 260, secondary: 190, order: 3 },
-  { id: 5, month: "May", value: 190, secondary: 230, order: 4 },
-  { id: 6, month: "Jun", value: 310, secondary: 200, order: 5 },
-  { id: 7, month: "Jul", value: 240, secondary: 270, order: 6 },
-];
+const previewSales: SalesPointData[] = [
+  ["2026-04", 8_000_000, 5_400_000],
+  ["2026-05", 13_000_000, 8_100_000],
+  ["2026-06", 9_500_000, 7_300_000],
+  ["2026-07", 26_000_000, 15_200_000],
+  ["2026-08", 19_000_000, 13_400_000],
+  ["2026-09", 31_000_000, 18_900_000],
+  ["2026-10", 24_000_000, 17_600_000],
+].map(([month, revenueCents, expensesCents], i) => ({
+  id: i + 1,
+  month: month as string,
+  revenueCents: revenueCents as number,
+  expensesCents: expensesCents as number,
+  order: i,
+}));
 
-const rtlProjects = [
-  { name: "Marketing Site Redesign", progress: 45, tag: "In progress" },
-  { name: "Mobile App Launch", progress: 100, tag: "Done" },
-  { name: "API Migration", progress: 70, tag: "In progress" },
+const previewProjects = [
+  { name: "Novo site institucional", progress: 45, tag: "Em execução" },
+  { name: "Aplicativo mobile", progress: 100, tag: "Concluído" },
+  { name: "Migração da API de pagamentos", progress: 70, tag: "Em execução" },
 ];
 
 export default function RtlPage() {
+  const dispatch = useAppDispatch();
+
+  // Inverte o layout inteiro (sidebar, paddings, ícones) via propriedades lógicas
+  // `start-*`/`end-*`, e restaura ao sair da página.
+  useEffect(() => {
+    dispatch(setDirection("rtl"));
+    return () => {
+      dispatch(setDirection("ltr"));
+    };
+  }, [dispatch]);
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 lg:gap-5">
       <Reveal>
         <Card>
-          <p className="text-sm font-semibold text-white">Dashboard Preview</p>
-          <p className="mt-1 text-sm text-[#A0AEC0]">
-            An alternate data set rendered with the same dashboard components,
-            for previewing widgets outside the main dashboard page.
-          </p>
+          <CardHeader
+            title="Prévia RTL"
+            subtitle="Os mesmos componentes do painel, com um conjunto alternativo de dados e layout da direita para a esquerda. Ao sair desta página, a direção volta ao normal."
+          />
         </Card>
       </Reveal>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {rtlStats.map((stat, i) => (
-          <Reveal key={stat.id} delay={i * 0.06}>
+      <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:gap-4 xl:grid-cols-4 lg:gap-5">
+        {previewStats.map((stat, i) => (
+          <Reveal key={stat.id} delay={i * 0.06} className="h-full">
             <StatCard stat={stat} />
           </Reveal>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="h-[420px] lg:col-span-2">
-          <Reveal className="block h-full">
-            <SalesOverviewCard points={rtlSales} />
+      <div className="grid grid-cols-1 gap-4 lg:gap-5 xl:grid-cols-3">
+        <div className="h-[400px] xl:col-span-2">
+          <Reveal className="h-full">
+            <RevenueExpensesCard points={previewSales} />
           </Reveal>
         </div>
-        <div className="h-[420px] lg:col-span-1">
-          <Reveal className="block h-full" delay={0.08}>
+        <div className="xl:col-span-1">
+          <Reveal className="h-full" delay={0.08}>
             <Card className="flex h-full flex-col">
-              <p className="text-sm font-semibold text-white">Projects</p>
-              <ul className="mt-4 flex flex-col gap-4">
-                {rtlProjects.map((project, i) => (
+              <CardHeader title="Projetos" />
+              <ul className="mt-5 flex flex-col gap-5">
+                {previewProjects.map((project, i) => (
                   <motion.li
                     key={project.name}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: i * 0.06 }}
+                    transition={{ duration: motionTokens.base, delay: i * 0.06, ease: motionTokens.ease }}
                   >
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-slate-200">{project.name}</span>
-                      <span className="text-xs font-semibold text-[#A0AEC0]">{project.tag}</span>
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="font-medium text-fg">{project.name}</span>
+                      <span className="shrink-0 text-xs font-semibold text-muted">{project.tag}</span>
                     </div>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${project.progress}%` }}
-                        transition={{ duration: 0.8, delay: 0.2 + i * 0.06, ease: "easeOut" }}
-                        className="grad-info h-full rounded-full"
+                        transition={{
+                          duration: motionTokens.chartDrawMs / 1000,
+                          delay: 0.2 + i * 0.06,
+                          ease: motionTokens.ease,
+                        }}
+                        className="grad-brand h-full rounded-full"
                       />
                     </div>
                   </motion.li>

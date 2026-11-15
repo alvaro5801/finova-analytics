@@ -1,17 +1,28 @@
-import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import { StoreProvider } from "@/store/provider";
+import { MotionProvider } from "@/components/providers/MotionProvider";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Vision UI Dashboard",
-  description: "A Vision UI-styled dashboard rebuilt with Next.js and Redux Toolkit.",
+  title: "Finova Analytics",
+  description:
+    "Painel financeiro de demonstração: receitas, despesas, fluxo de caixa e orçamentos em um só lugar.",
+  applicationName: "Finova Analytics",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#090E1A",
 };
 
 export default function RootLayout({
@@ -20,9 +31,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${jakarta.variable} h-full antialiased`}>
+    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-full">
-        <StoreProvider>{children}</StoreProvider>
+        <StoreProvider>
+          <MotionProvider>{children}</MotionProvider>
+        </StoreProvider>
       </body>
     </html>
   );

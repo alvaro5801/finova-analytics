@@ -1,70 +1,82 @@
 "use client";
 
+import clsx from "clsx";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
+import { CardHeader } from "@/components/ui/CardHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { motionTokens } from "@/lib/tokens";
 import type { AuthorData } from "@/types/dashboard";
 
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join("");
+}
+
 export function AuthorsTable({ authors }: { authors: AuthorData[] }) {
+  const online = authors.filter((a) => a.status === "online").length;
+
   return (
     <Card>
-      <p className="mb-4 text-sm font-semibold text-slate-700">Authors table</p>
-      <div className="overflow-x-auto">
+      <CardHeader title="Equipe financeira" subtitle={`${authors.length} pessoas · ${online} online agora`} />
+      <div className="-mx-6 mt-5 overflow-x-auto px-6">
         <table className="w-full min-w-[640px] border-collapse text-left text-sm">
           <thead>
-            <tr className="text-xs uppercase tracking-wide text-slate-400">
-              <th className="pb-2 font-semibold">Author</th>
-              <th className="pb-2 font-semibold">Function</th>
-              <th className="pb-2 font-semibold">Status</th>
-              <th className="pb-2 font-semibold">Employed</th>
+            <tr className="text-[11px] uppercase tracking-[0.08em] text-muted">
+              <th scope="col" className="pb-3 font-medium">Pessoa</th>
+              <th scope="col" className="pb-3 font-medium">Cargo</th>
+              <th scope="col" className="pb-3 font-medium">Status</th>
+              <th scope="col" className="pb-3 font-medium">Admissão</th>
             </tr>
           </thead>
           <tbody>
             {authors.map((author, i) => (
               <motion.tr
                 key={author.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.04 }}
-                className="border-t border-slate-100"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: motionTokens.base, delay: i * 0.04, ease: motionTokens.ease }}
+                className="border-t border-line transition-colors duration-200 hover:bg-white/[0.02]"
               >
-                <td className="py-3 pr-4">
+                <td className="py-3 pe-4">
                   <div className="flex items-center gap-3">
                     <span
-                      className={`grad-${author.avatarColor} flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold text-white`}
+                      className={`grad-${author.avatarColor} flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white`}
                     >
-                      {author.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {initials(author.name)}
                     </span>
-                    <div>
-                      <p className="font-medium text-slate-600">{author.name}</p>
-                      <p className="text-xs text-slate-400">{author.email}</p>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-fg">{author.name}</p>
+                      <p className="truncate text-xs text-muted">{author.email}</p>
                     </div>
                   </div>
                 </td>
-                <td className="py-3 pr-4">
-                  <p className="font-medium text-slate-600">{author.function}</p>
-                  <p className="text-xs text-slate-400">{author.department}</p>
+                <td className="py-3 pe-4">
+                  <p className="font-medium text-fg">{author.function}</p>
+                  <p className="text-xs text-muted">{author.department}</p>
                 </td>
-                <td className="py-3 pr-4">
+                <td className="py-3 pe-4">
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      author.status === "online"
-                        ? "bg-emerald-50 text-emerald-600"
-                        : "bg-slate-100 text-slate-500"
-                    }`}
+                    className={clsx(
+                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
+                      author.status === "online" ? "bg-success/10 text-success" : "bg-white/[0.05] text-muted",
+                    )}
                   >
                     <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        author.status === "online" ? "bg-emerald-500" : "bg-slate-400"
-                      }`}
+                      aria-hidden="true"
+                      className={clsx(
+                        "h-1.5 w-1.5 rounded-full",
+                        author.status === "online" ? "bg-success" : "bg-faint",
+                      )}
                     />
-                    {author.status === "online" ? "Online" : "Offline"}
+                    {author.status === "online" ? "Online" : "Ausente"}
                   </span>
                 </td>
-                <td className="py-3 pr-4 text-slate-500">{author.employed}</td>
+                <td className="py-3 pe-4 text-muted tabular-nums">{author.employed}</td>
               </motion.tr>
             ))}
           </tbody>
@@ -77,7 +89,8 @@ export function AuthorsTable({ authors }: { authors: AuthorData[] }) {
 export function AuthorsTableSkeleton() {
   return (
     <Card>
-      <Skeleton className="h-4 w-32" />
+      <Skeleton className="h-4 w-36" />
+      <Skeleton className="mt-2 h-3 w-44" />
       <div className="mt-5 space-y-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-10 w-full" />

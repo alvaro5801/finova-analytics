@@ -1,27 +1,35 @@
 import Link from "next/link";
-import { Boxes } from "lucide-react";
+import { FinovaLogo } from "@/components/brand/FinovaLogo";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0f1535] px-4 py-10">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
       <div
-        className="absolute inset-0 opacity-90"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 20% 20%, rgba(73,163,241,0.35), transparent 45%), radial-gradient(circle at 80% 0%, rgba(236,64,122,0.35), transparent 40%), linear-gradient(195deg, #1a1f3d, #0f1535)",
+            "radial-gradient(38rem 26rem at 18% 12%, rgb(121 88 245 / 0.22), transparent 60%), radial-gradient(30rem 22rem at 88% 92%, rgb(34 211 238 / 0.12), transparent 60%)",
         }}
       />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.35] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgb(232 237 247 / 0.05) 1px, transparent 1px), linear-gradient(90deg, rgb(232 237 247 / 0.05) 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
+        }}
+      />
+
       <div className="relative z-10 w-full max-w-sm">
-        <Link
-          href="/dashboard"
-          className="mb-6 flex items-center justify-center gap-2 text-white"
-        >
-          <span className="grad-info flex h-9 w-9 items-center justify-center rounded-xl">
-            <Boxes size={18} />
-          </span>
-          <span className="text-sm font-semibold">Material Dashboard</span>
+        <Link href="/dashboard" className="mb-8 flex justify-center" aria-label="Finova Analytics: ir para o painel">
+          <FinovaLogo />
         </Link>
         {children}
+        <p className="mt-6 text-center text-xs text-muted">
+          Ambiente de demonstração · qualquer e-mail válido e senha com 6+ caracteres
+        </p>
       </div>
     </div>
   );

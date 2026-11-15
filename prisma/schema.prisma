@@ -15,29 +15,38 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-// Top-row stat cards: Today's Money, Today's Users, New Clients, Sales
+// Convenções de valores (D1 da Quick Spec Finova):
+// - Dinheiro é sempre inteiro em centavos (sufixo `Cents`). Nunca float, nunca string formatada.
+// - Métricas mistas usam `value Int` + `format`:
+//     "currency" -> centavos · "percent" -> pontos-base (1% = 100) · "number" -> unidades.
+// - A formatação (R$, %, datas pt-BR) acontece só na UI: src/lib/format.ts.
+// Os nomes dos modelos foram herdados do template original; a semântica financeira
+// de cada um está documentada no comentário acima dele.
+
+// KPIs do topo: Receita, Despesas, Saldo, Crescimento.
 model StatCard {
-  id           Int    @id @default(autoincrement())
-  key          String @unique
-  title        String
-  value        String
-  changePct    Float
-  changeLabel  String
-  icon         String
-  color        String
-  order        Int    @default(0)
+  id          Int    @id @default(autoincrement())
+  key         String @unique
+  title       String
+  value       Int
+  format      String @default("currency")
+  changePct   Float
+  changeLabel String
+  icon        String
+  color       String
+  order       Int    @default(0)
 }
 
-// Sales overview gradient line chart, monthly revenue
+// Série mensal Receita × Despesas. `month` é o período "AAAA-MM".
 model SalesPoint {
-  id        Int    @id @default(autoincrement())
-  month     String
-  value     Int
-  secondary Int    @default(0)
-  order     Int    @default(0)
+  id            Int    @id @default(autoincrement())
+  month         String
+  revenueCents  Int
+  expensesCents Int
+  order         Int    @default(0)
 }
 
-// Active users weekly bar chart
+// Volume de transações por dia (gráfico de barras).
 model ActiveUsersPoint {
   id    Int    @id @default(autoincrement())
   day   String
@@ -45,24 +54,25 @@ model ActiveUsersPoint {
   order Int    @default(0)
 }
 
-// Small stat chips shown above the Active Users chart
+// Indicadores operacionais abaixo do gráfico de transações.
 model ActiveUsersStat {
-  id    Int    @id @default(autoincrement())
-  label String
-  value String
-  icon  String
-  order Int    @default(0)
+  id     Int    @id @default(autoincrement())
+  label  String
+  value  Int
+  format String @default("number")
+  icon   String
+  order  Int    @default(0)
 }
 
-// Satisfaction rate gauge
+// Meta anual de receita: `value` é o % atingido de `targetCents`.
 model SatisfactionRate {
   id          Int    @id @default(autoincrement())
   value       Float
   label       String
-  totalVotes  Int
+  targetCents Int
 }
 
-// Referral tracking mini line charts (Invited / Bonus)
+// Série auxiliar (não exibida no painel; mantida pela rota /api/referral).
 model ReferralPoint {
   id     Int    @id @default(autoincrement())
   series String
@@ -71,14 +81,17 @@ model ReferralPoint {
   order  Int    @default(0)
 }
 
+// Saúde financeira: indicadores-resumo (contas a receber, margem líquida).
 model ReferralSummary {
-  id           Int    @id @default(autoincrement())
-  series       String @unique
-  total        String
-  changePct    Float
+  id        Int    @id @default(autoincrement())
+  series    String @unique
+  label     String
+  value     Int
+  format    String @default("currency")
+  changePct Float
 }
 
-// Circular "Safety" score ring shown alongside referral tracking
+// Score de saúde financeira (0 a maxValue).
 model ScoreRing {
   id       Int    @id @default(autoincrement())
   label    String
@@ -87,47 +100,48 @@ model ScoreRing {
   caption  String
 }
 
-// Projects table
+// Orçamentos por área. `budgetCents` nulo = orçamento não definido.
 model Project {
   id          Int    @id @default(autoincrement())
   name        String
   icon        String
   members     String
-  budget      String
+  budgetCents Int?
   completion  Int
   status      String
   order       Int    @default(0)
 }
 
-// Orders overview timeline
+// Transações recentes. `amountCents` com sinal: positivo = entrada, negativo = saída.
 model OrderEvent {
   id          Int      @id @default(autoincrement())
   title       String
   description String
+  amountCents Int
   date        DateTime
   color       String
   icon        String
   order       Int      @default(0)
 }
 
-// Tables page - Authors table
+// Equipe (página Relatórios).
 model Author {
-  id         Int    @id @default(autoincrement())
-  name       String
-  email      String
+  id          Int    @id @default(autoincrement())
+  name        String
+  email       String
   avatarColor String
-  function   String
-  department String
-  status     String
-  employed   String
-  order      Int    @default(0)
+  function    String
+  department  String
+  status      String
+  employed    String
+  order       Int    @default(0)
 }
 
-// Billing page - invoices
+// Faturas da assinatura Finova (página Faturamento).
 model Invoice {
-  id     Int    @id @default(autoincrement())
-  date   String
-  code   String
-  amount String
-  order  Int    @default(0)
+  id          Int      @id @default(autoincrement())
+  issuedAt    DateTime
+  code        String
+  amountCents Int
+  order       Int      @default(0)
 }

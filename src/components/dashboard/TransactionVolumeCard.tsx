@@ -1,90 +1,119 @@
 "use client";
 
-import { Bar, BarChart, ResponsiveContainer, YAxis } from "recharts";
+import { useId } from "react";
+import { useReducedMotion } from "framer-motion";
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card } from "@/components/ui/Card";
+import { CardHeader } from "@/components/ui/CardHeader";
+import { ChartTooltip } from "@/components/ui/ChartTooltip";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { formatMetric, formatNumber } from "@/lib/format";
 import { renderIcon } from "@/lib/icon-map";
+import { colors, motionTokens } from "@/lib/tokens";
 import type { ActiveUsersResponse } from "@/types/dashboard";
 
-const PROGRESS_WIDTHS = [70, 45, 85, 55];
+const axisTick = { fill: colors.muted, fontSize: 11 };
 
-export function ActiveUsersCard({ data }: { data: ActiveUsersResponse }) {
+export function TransactionVolumeCard({ data }: { data: ActiveUsersResponse }) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const reduceMotion = useReducedMotion();
+  const total = data.chart.reduce((sum, d) => sum + d.value, 0);
+  const peakIndex = data.chart.reduce((best, d, i, arr) => (d.value > arr[best].value ? i : best), 0);
+  const peak = data.chart[peakIndex];
+
   return (
     <Card className="flex h-full flex-col">
-      <div className="h-[222px] shrink-0 rounded-2xl bg-[#060C29] p-4">
+      <CardHeader
+        title="Volume de transações"
+        subtitle={
+          <>
+            Últimos 7 dias · pico na <span className="font-semibold text-fg">{peak?.day}</span>
+          </>
+        }
+      />
+
+      <div
+        className="fn-well mt-4 h-[170px] shrink-0 rounded-xl px-1 pb-1 pt-3"
+        role="img"
+        aria-label={`Gráfico de barras: ${formatNumber(total)} transações nos últimos 7 dias, com pico na ${peak?.day}`}
+      >
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={data.chart}
-            margin={{ top: 4, right: 4, bottom: 8, left: -20 }}
-          >
+          <BarChart data={data.chart} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+            <defs>
+              <linearGradient id={`bar-${uid}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={colors.primaryLight} stopOpacity={0.9} />
+                <stop offset="100%" stopColor={colors.primary} stopOpacity={0.35} />
+              </linearGradient>
+              <linearGradient id={`peak-${uid}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={colors.accent} />
+                <stop offset="100%" stopColor={colors.primary} stopOpacity={0.6} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid stroke={colors.line} strokeDasharray="4 6" vertical={false} />
+            <XAxis dataKey="day" tick={axisTick} axisLine={false} tickLine={false} tickMargin={6} />
             <YAxis
-              tick={{ fill: "#A0AEC0", fontSize: 9, fontWeight: 700 }}
+              tickFormatter={formatNumber}
+              tick={axisTick}
               axisLine={false}
               tickLine={false}
-              domain={[0, 500]}
-              ticks={[0, 100, 200, 300, 400, 500]}
-              allowDecimals={false}
-              interval={0}
+              width={44}
+              tickCount={4}
+            />
+            <Tooltip
+              animationDuration={motionTokens.fast * 1000}
+              cursor={{ fill: "rgba(232, 237, 247, 0.04)", radius: 8 }}
+              content={(props) => (
+                <ChartTooltip
+                  active={props.active}
+                  payload={props.payload}
+                  label={props.label}
+                  valueFormatter={formatNumber}
+                />
+              )}
             />
             <Bar
               dataKey="value"
-              fill="#FFFFFF"
-              radius={[15, 15, 15, 15]}
-              barSize={7}
-              isAnimationActive
-              animationDuration={900}
+              name="Transações"
+              radius={[6, 6, 6, 6]}
+              maxBarSize={22}
+              isAnimationActive={!reduceMotion}
+              animationDuration={motionTokens.chartDrawMs}
               animationEasing="ease-out"
-            />
+            >
+              {data.chart.map((entry, i) => (
+                <Cell key={entry.id} fill={i === peakIndex ? `url(#peak-${uid})` : `url(#bar-${uid})`} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      <p className="mt-5 text-[18px] font-bold text-white">Active Users</p>
-      <p className="mt-1 text-sm text-[#A0AEC0]">
-        <span className="font-bold text-emerald-400">(+23)</span>{" "}
-        <span className="text-[#A0AEC0] text-[14px] font-bold">
-          than last week
-        </span>
-      </p>
-
-      <div className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {data.stats.map((stat, i) => {
-          return (
-            <div key={stat.id} className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0075ff] text-white">
-                  {renderIcon(stat.icon, { size: 14 })}
-                </span>
-                <span className="truncate text-xs text-[#A0AEC0]">
-                  {stat.label}
-                </span>
-              </div>
-              <p className="text-lg font-bold text-white text-[18px]">
-                {stat.value}
-              </p>
-              <div className="h-1 w-[100px] max-w-full overflow-hidden rounded-full bg-[#2D2E5F]">
-                <div
-                  className="h-full rounded-full bg-[#0075ff]"
-                  style={{ width: `${PROGRESS_WIDTHS[i % PROGRESS_WIDTHS.length]}px` }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <dl className="mt-4 grid grid-cols-2 gap-3">
+        {data.stats.map((stat) => (
+          <div key={stat.id} className="fn-well rounded-xl px-3 py-2.5">
+            <dt className="flex items-center gap-2 text-xs text-muted">
+              <span className="text-primary-light">{renderIcon(stat.icon, { size: 14 })}</span>
+              <span className="truncate">{stat.label}</span>
+            </dt>
+            <dd className="mt-1 text-lg font-semibold tracking-tight text-fg tabular-nums">
+              {formatMetric(stat.value, stat.format)}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </Card>
   );
 }
 
-export function ActiveUsersSkeleton() {
+export function TransactionVolumeSkeleton() {
   return (
     <Card className="flex h-full flex-col">
-      <Skeleton className="h-[222px] shrink-0 rounded-2xl" />
-      <Skeleton className="mt-5 h-3 w-28" />
+      <Skeleton className="h-4 w-44" />
       <Skeleton className="mt-2 h-3 w-36" />
-      <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <Skeleton className="mt-4 h-[170px] w-full rounded-xl" />
+      <div className="mt-4 grid grid-cols-2 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
+          <Skeleton key={i} className="h-16 w-full rounded-xl" />
         ))}
       </div>
     </Card>

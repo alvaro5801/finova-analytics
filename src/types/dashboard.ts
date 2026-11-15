@@ -1,10 +1,14 @@
 export type StatColor = "dark" | "info" | "success" | "primary" | "warning" | "danger";
 
+/** D1: "currency" = centavos · "percent" = pontos-base (1% = 100) · "number" = unidades. */
+export type MetricFormat = "currency" | "percent" | "number";
+
 export interface StatCardData {
   id: number;
   key: string;
   title: string;
-  value: string;
+  value: number;
+  format: MetricFormat;
   changePct: number;
   changeLabel: string;
   icon: string;
@@ -14,9 +18,10 @@ export interface StatCardData {
 
 export interface SalesPointData {
   id: number;
+  /** Período "AAAA-MM". */
   month: string;
-  value: number;
-  secondary: number;
+  revenueCents: number;
+  expensesCents: number;
   order: number;
 }
 
@@ -30,7 +35,8 @@ export interface ActiveUsersPointData {
 export interface ActiveUsersStatData {
   id: number;
   label: string;
-  value: string;
+  value: number;
+  format: MetricFormat;
   icon: string;
   order: number;
 }
@@ -40,16 +46,17 @@ export interface ActiveUsersResponse {
   stats: ActiveUsersStatData[];
 }
 
+/** Meta anual de receita: `value` = % atingido de `targetCents`. */
 export interface SatisfactionRateData {
   id: number;
   value: number;
   label: string;
-  totalVotes: number;
+  targetCents: number;
 }
 
 export interface ReferralPointData {
   id: number;
-  series: "invited" | "bonus";
+  series: string;
   month: string;
   value: number;
   order: number;
@@ -57,8 +64,10 @@ export interface ReferralPointData {
 
 export interface ReferralSummaryData {
   id: number;
-  series: "invited" | "bonus";
-  total: string;
+  series: string;
+  label: string;
+  value: number;
+  format: MetricFormat;
   changePct: number;
 }
 
@@ -81,7 +90,8 @@ export interface ProjectData {
   name: string;
   icon: string;
   members: string;
-  budget: string;
+  /** `null` = orçamento não definido. */
+  budgetCents: number | null;
   completion: number;
   status: "working" | "done" | "cancelled";
   order: number;
@@ -91,6 +101,8 @@ export interface OrderEventData {
   id: number;
   title: string;
   description: string;
+  /** Positivo = entrada, negativo = saída. */
+  amountCents: number;
   date: string;
   color: StatColor;
   icon: string;
@@ -111,9 +123,9 @@ export interface AuthorData {
 
 export interface InvoiceData {
   id: number;
-  date: string;
+  issuedAt: string;
   code: string;
-  amount: string;
+  amountCents: number;
   order: number;
 }
 

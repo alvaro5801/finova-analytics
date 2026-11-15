@@ -1,8 +1,9 @@
 "use client";
 
 import { Reveal } from "@/components/ui/Reveal";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { AuthorsTable, AuthorsTableSkeleton } from "@/components/tables/AuthorsTable";
-import { ProjectsCard, ProjectsSkeleton } from "@/components/dashboard/ProjectsCard";
+import { BudgetsCard, BudgetsSkeleton } from "@/components/dashboard/BudgetsCard";
 import { useGetAuthorsQuery, useGetProjectsQuery } from "@/store/api/dashboardApi";
 
 export default function TablesPage() {
@@ -10,12 +11,10 @@ export default function TablesPage() {
   const projects = useGetProjectsQuery();
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 lg:gap-5">
       {authors.isLoading && <AuthorsTableSkeleton />}
       {authors.isError && (
-        <div className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-500">
-          Couldn&apos;t load authors table.
-        </div>
+        <ErrorState message="Não foi possível carregar a equipe." onRetry={authors.refetch} />
       )}
       {authors.data && (
         <Reveal>
@@ -23,15 +22,13 @@ export default function TablesPage() {
         </Reveal>
       )}
 
-      {projects.isLoading && <ProjectsSkeleton />}
+      {projects.isLoading && <BudgetsSkeleton />}
       {projects.isError && (
-        <div className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-500">
-          Couldn&apos;t load projects table.
-        </div>
+        <ErrorState message="Não foi possível carregar os orçamentos." onRetry={projects.refetch} />
       )}
       {projects.data && (
         <Reveal delay={0.08}>
-          <ProjectsCard projects={projects.data} />
+          <BudgetsCard projects={projects.data} />
         </Reveal>
       )}
     </div>

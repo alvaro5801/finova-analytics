@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return fail("Request body must be valid JSON.");
+    return fail("O corpo da requisição precisa ser um JSON válido.");
   }
 
   const { name, email, password } = (body ?? {}) as {
@@ -19,13 +19,13 @@ export async function POST(request: Request) {
   };
 
   if (!name || name.trim().length < 2) {
-    return fail("Please enter your full name.");
+    return fail("Informe seu nome completo.");
   }
   if (!email || !EMAIL_RE.test(email)) {
-    return fail("Please enter a valid email address.");
+    return fail("Informe um e-mail válido.");
   }
   if (!password || password.length < 6) {
-    return fail("Password must be at least 6 characters.");
+    return fail("A senha precisa ter pelo menos 6 caracteres.");
   }
 
   return ok(

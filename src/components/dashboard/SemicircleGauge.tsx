@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
+import { colors, motionTokens } from "@/lib/tokens";
 
 const SIZE = 224;
 const STROKE = 16;
@@ -31,7 +32,7 @@ export function SemicircleGauge({
   gradientId,
   gradientStops,
   capColor,
-  trackColor = "rgba(255,255,255,0.08)",
+  trackColor = colors.line,
   trackSweepDeg = SWEEP_DEG,
   fromDeg = FROM_DEG,
   size,
@@ -101,7 +102,7 @@ export function SemicircleGauge({
           style={{
             strokeDasharray: ARC_LENGTH,
             strokeDashoffset: revealed ? finalOffset : ARC_LENGTH,
-            transition: "stroke-dashoffset 1.1s cubic-bezier(0.16,1,0.3,1)",
+            transition: `stroke-dashoffset ${motionTokens.chartDrawMs}ms cubic-bezier(0.22,1,0.36,1)`,
           }}
         />
         <circle
@@ -111,8 +112,8 @@ export function SemicircleGauge({
           fill={capColor}
           style={{
             opacity: revealed ? 1 : 0,
-            filter: `drop-shadow(0 0 6px ${capColor})`,
-            transition: "opacity 0.5s ease-out 0.85s",
+            filter: `drop-shadow(0 0 5px ${capColor})`,
+            transition: `opacity 300ms ease-out ${motionTokens.chartDrawMs - 150}ms`,
           }}
         />
       </svg>

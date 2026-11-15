@@ -3,15 +3,29 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Bell, Menu, Search, User } from "lucide-react";
+import { Bell, LogIn, Menu } from "lucide-react";
+import { PageSearch } from "@/components/layout/PageSearch";
 import { allNavItems } from "@/config/nav";
+import { motionTokens } from "@/lib/tokens";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { toggleSidebar } from "@/store/slices/uiSlice";
 
 function currentLabel(pathname: string) {
-  const match = allNavItems.find((item) => item.href === pathname);
-  return match?.label ?? "Dashboard";
+  return allNavItems.find((item) => item.href === pathname)?.label ?? "Visão geral";
 }
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+}
+
+const iconButton =
+  "flex h-9 w-9 items-center justify-center rounded-xl text-muted transition-colors duration-200 hover:bg-white/[0.06] hover:text-fg";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -21,88 +35,65 @@ export function Navbar() {
 
   return (
     <motion.header
-      initial={{ opacity: 0, y: -16 }}
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="mb-6 flex flex-wrap items-center justify-between gap-4 px-1 py-2"
+      transition={{ duration: motionTokens.base, ease: motionTokens.ease }}
+      className="sticky top-3 z-20 mb-6 flex items-center justify-between gap-3 rounded-2xl border border-line bg-canvas/70 px-3 py-2.5 backdrop-blur-xl sm:px-4"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2">
         <button
           onClick={() => dispatch(toggleSidebar())}
-          aria-label="Toggle sidebar"
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-white/10 lg:hidden"
+          aria-label="Abrir menu"
+          className={`${iconButton} lg:hidden`}
         >
           <Menu size={18} />
         </button>
-        <div>
-          <p className="text-[12px] font-medium text-slate-400">
-            Pages / <span className="font-semibold text-white">{label}</span>
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-muted">
+            Finova <span className="text-faint">/</span> {label}
           </p>
-          <h1 className="text-[14px] font-semibold text-white">{label}</h1>
+          <h1 className="truncate text-base font-semibold tracking-tight text-fg sm:text-lg">{label}</h1>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
-        <label className="hidden items-center gap-2 rounded-full bg-white/5 px-3 py-2 text-sm text-slate-300 ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-[#0075ff]/50 sm:flex">
-          <Search size={15} />
-          <input
-            type="text"
-            placeholder="Type here..."
-            className="w-32 bg-transparent text-sm text-slate-200 outline-none placeholder:text-slate-500 lg:w-44"
-          />
-        </label>
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
+        <div className="hidden sm:block">
+          <PageSearch />
+        </div>
 
-        {!user && (
-          <Link
-            href="/sign-in"
-            className="hidden items-center gap-1.5 rounded-lg px-2 py-2 text-[12px] font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white sm:flex"
-          >
-            <User size={14} fill="currentColor" strokeWidth={0} />
-            Sign In
-          </Link>
-        )}
+        <span
+          title="Todos os dados exibidos são fictícios"
+          className="hidden items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent md:inline-flex"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
+          Dados demo
+        </span>
 
-        {user && (
+        <button aria-label="Notificações" title="Sem notificações novas" className={iconButton}>
+          <Bell size={17} />
+        </button>
+
+        {user ? (
           <Link
             href="/profile"
-            className="hidden items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-white/10 sm:flex"
+            className="flex items-center gap-2 rounded-xl py-1 pe-1 ps-1 transition-colors duration-200 hover:bg-white/[0.06] md:pe-3"
           >
-            <span className="grad-info flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white">
-              {user.name.charAt(0).toUpperCase()}
+            <span className="grad-info flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold text-white">
+              {initials(user.name)}
             </span>
-            {user.name}
+            <span className="hidden max-w-[10rem] truncate text-sm font-medium text-fg md:inline">
+              {user.name}
+            </span>
+          </Link>
+        ) : (
+          <Link
+            href="/sign-in"
+            className="flex items-center gap-1.5 rounded-xl border border-line px-3 py-2 text-xs font-semibold text-fg transition-colors duration-200 hover:border-primary/50 hover:bg-primary/10"
+          >
+            <LogIn size={14} aria-hidden="true" />
+            Entrar
           </Link>
         )}
-
-        <button
-          aria-label="Settings"
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 transition-transform duration-200 hover:-rotate-45 hover:bg-white/10"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <defs>
-              <mask id="settings-gear-hole">
-                <rect x="0" y="0" width="24" height="24" fill="white" />
-                <circle cx="12" cy="12" r="3" fill="black" />
-              </mask>
-            </defs>
-            <path
-              d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
-              fill="#718096"
-              stroke="#718096"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              mask="url(#settings-gear-hole)"
-            />
-          </svg>
-        </button>
-
-        <button
-          aria-label="Notifications"
-          className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-white/10"
-        >
-          <Bell size={16} fill="currentColor" strokeWidth={0} className="text-[#718096]" />
-        </button>
       </div>
     </motion.header>
   );

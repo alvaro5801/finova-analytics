@@ -1,98 +1,92 @@
 "use client";
 
+import clsx from "clsx";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
+import { CardHeader } from "@/components/ui/CardHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { formatBRL, formatDateTime, formatSignedBRL } from "@/lib/format";
 import { renderIcon } from "@/lib/icon-map";
+import { motionTokens } from "@/lib/tokens";
+import { toneChip } from "@/lib/tones";
 import type { OrderEventData } from "@/types/dashboard";
 
-const iconColor: Record<string, string> = {
-  dark: "text-slate-300",
-  info: "text-[#0075ff]",
-  success: "text-emerald-400",
-  primary: "text-[#e91e8c]",
-  warning: "text-[#f0ad4e]",
-  danger: "text-[#e33f3f]",
-};
+export function RecentTransactionsCard({ orders }: { orders: OrderEventData[] }) {
+  const inflow = orders.filter((o) => o.amountCents > 0).reduce((sum, o) => sum + o.amountCents, 0);
+  const outflow = orders.filter((o) => o.amountCents < 0).reduce((sum, o) => sum - o.amountCents, 0);
 
-function OrderIcon({ icon, color }: { icon: string; color: string }) {
-  if (icon === "none") {
-    return <span className="h-6 w-6 shrink-0" />;
-  }
-  if (icon === "figma") {
-    return (
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#4a1942] text-[10px] font-bold text-[#ff61f6]">
-        Xd
-      </span>
-    );
-  }
   return (
-    <span
-      className={`flex h-6 w-6 shrink-0 items-center justify-center ${
-        iconColor[color] ?? "text-white"
-      }`}
-    >
-      {renderIcon(icon, { size: 16, fill: "currentColor", strokeWidth: 0 })}
-    </span>
-  );
-}
+    <Card className="flex h-full flex-col">
+      <CardHeader title="Transações recentes" />
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+        <div className="fn-well rounded-lg px-3 py-2">
+          <p className="text-muted">Entradas</p>
+          <p className="mt-0.5 font-semibold text-success tabular-nums">{formatBRL(inflow)}</p>
+        </div>
+        <div className="fn-well rounded-lg px-3 py-2">
+          <p className="text-muted">Saídas</p>
+          <p className="mt-0.5 font-semibold text-fg tabular-nums">{formatBRL(outflow)}</p>
+        </div>
+      </div>
 
-const cardBackground =
-  "linear-gradient(126.97deg, rgba(6, 11, 40, 0.74) 28.26%, rgba(10, 14, 35, 0.71) 91.2%)";
-
-export function OrdersCard({ orders }: { orders: OrderEventData[] }) {
-  return (
-    <Card className="flex h-full flex-col" style={{ background: cardBackground }}>
-      <p className="text-[18px] font-bold text-white">Orders overview</p>
-      <p className="mt-1 flex items-center gap-1.5 text-sm text-[#A0AEC0] text-[13px] font-bold">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="12" fill="#01B574" />
-          <path
-            d="M7.5 12.5l3 3 6-6.5"
-            stroke="black"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        +30% this month
-      </p>
-
-      <ol className="mt-6 space-y-6">
-        {orders.map((order, i) => (
-          <motion.li
-            key={order.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.06 }}
-            className="flex items-start gap-4"
-          >
-            <OrderIcon icon={order.icon} color={order.color} />
-            <div>
-              <p className="text-[14px] font-bold text-white">{order.title}</p>
-              <p className="mt-0.5 text-[12px] font-normal text-[#A0AEC0]">
-                {order.description}
-              </p>
-            </div>
-          </motion.li>
-        ))}
+      <ol className="mt-4 flex flex-col divide-y divide-line">
+        {orders.map((order, i) => {
+          const incoming = order.amountCents > 0;
+          return (
+            <motion.li
+              key={order.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: motionTokens.base, delay: i * 0.05, ease: motionTokens.ease }}
+              className="flex items-center gap-3 py-3"
+            >
+              <span
+                className={clsx(
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset",
+                  toneChip[order.color] ?? toneChip.dark,
+                )}
+              >
+                {renderIcon(order.icon, { size: 16 })}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-fg">{order.title}</p>
+                <p className="truncate text-xs text-muted">
+                  {order.description} · {formatDateTime(order.date)}
+                </p>
+              </div>
+              <span
+                className={clsx(
+                  "shrink-0 text-sm font-semibold tabular-nums",
+                  incoming ? "text-success" : "text-fg",
+                )}
+              >
+                {formatSignedBRL(order.amountCents)}
+              </span>
+            </motion.li>
+          );
+        })}
       </ol>
     </Card>
   );
 }
 
-export function OrdersSkeleton() {
+export function RecentTransactionsSkeleton() {
   return (
-    <Card style={{ background: cardBackground }}>
-      <Skeleton className="h-4 w-32" />
-      <div className="mt-6 space-y-6">
-        {Array.from({ length: 5 }).map((_, i) => (
+    <Card className="h-full">
+      <Skeleton className="h-4 w-40" />
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Skeleton className="h-12 rounded-lg" />
+        <Skeleton className="h-12 rounded-lg" />
+      </div>
+      <div className="mt-5 space-y-5">
+        {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3">
-            <Skeleton className="h-6 w-6 shrink-0 rounded" />
+            <Skeleton className="h-9 w-9 shrink-0 rounded-lg" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-3 w-40" />
               <Skeleton className="h-2.5 w-24" />
             </div>
+            <Skeleton className="h-3.5 w-20" />
           </div>
         ))}
       </div>

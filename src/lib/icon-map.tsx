@@ -1,51 +1,57 @@
 import {
-  Bell,
+  Activity,
+  ArrowDownLeft,
+  ArrowUpRight,
   Boxes,
-  Cable,
-  CreditCard,
-  FileText,
-  Globe,
-  Layers,
-  MessageSquare,
-  MousePointerClick,
-  Package,
-  PenTool,
-  ShoppingCart,
+  Building2,
+  ChartLine,
+  CodeXml,
+  Gift,
+  Headphones,
+  Landmark,
+  Megaphone,
+  Receipt,
+  RefreshCw,
+  Scale,
+  Server,
   TrendingUp,
-  UserPlus,
+  TriangleAlert,
+  Truck,
   Users,
   Wallet,
   type LucideIcon,
   type LucideProps,
 } from "lucide-react";
 
+/** Chave de ícone vinda do banco (seed) → componente lucide. */
 export const iconMap: Record<string, LucideIcon> = {
+  "trending-up": TrendingUp,
+  "chart-line": ChartLine,
+  receipt: Receipt,
   wallet: Wallet,
+  activity: Activity,
   users: Users,
-  "user-plus": UserPlus,
-  "chart-bar": TrendingUp,
-  cursor: MousePointerClick,
-  cart: ShoppingCart,
-  trend: TrendingUp,
-  bell: Bell,
-  "credit-card": CreditCard,
-  package: Package,
-  globe: Globe,
-  "file-text": FileText,
-  figma: PenTool,
-  atlassian: Boxes,
-  slack: MessageSquare,
-  spotify: Cable,
-  jira: Boxes,
-  invision: Layers,
+  alert: TriangleAlert,
+  megaphone: Megaphone,
+  code: CodeXml,
+  building: Building2,
+  headphones: Headphones,
+  truck: Truck,
+  gift: Gift,
+  "arrow-in": ArrowDownLeft,
+  "arrow-out": ArrowUpRight,
+  landmark: Landmark,
+  server: Server,
+  scale: Scale,
+  refresh: RefreshCw,
 };
 
 export function getIcon(key: string): LucideIcon {
   return iconMap[key] ?? Boxes;
 }
 
-/** Renders the icon for `key` without exposing a component reference to callers. */
+/** Renderiza o ícone de `key` sem expor uma referência de componente a quem chama. */
 export function renderIcon(key: string, props?: LucideProps) {
   const Icon = iconMap[key] ?? Boxes;
-  return <Icon {...props} />;
+  return <Icon aria-hidden="true" {...props} />;
 }
