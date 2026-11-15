@@ -103,4 +103,5 @@ ITERATIONS=10 bash scripts/burn-in.sh # burn-in completo (padrão TEA: 10 itera�
 | Smoke test falhou em `/api/stats` | Banco Turso sem o schema atual ou variáveis ausentes na Vercel | `npm run db:reset` contra o Turso ([deploy.md](deploy.md)) |
 | E2E falhou | Regressão ou teste instável | Baixe o artefato `playwright-report-*` e rode `npx playwright show-trace` |
 | Segurança falhou no `npm audit` | Vulnerabilidade crítica em dependência de produção | Atualize a dependência; se não houver correção, registre a exceção num ADR |
+| Resumo da Segurança mostra 3 altas no Prisma | Vulnerabilidade conhecida e aceita na CLI do Prisma 6 | Esperado até a migração ([ADR-0008](../decisoes/0008-adiar-migracao-prisma-7.md)) |
 | Segurança falhou no gitleaks | Segredo no histórico | **Revogue o segredo primeiro** e depois limpe o histórico |

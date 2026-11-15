@@ -2,6 +2,11 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Documentação
+- [ADR-0008](docs/decisoes/0008-adiar-migracao-prisma-7.md): migração para o Prisma 7 adiada, com a análise de exposição (vulnerabilidade só na CLI), os gatilhos de revisão e o plano de migração.
+
 ## [0.2.1] - 2026-11-15
 
 ### Segurança

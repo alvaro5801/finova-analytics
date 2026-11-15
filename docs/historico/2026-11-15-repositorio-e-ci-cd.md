@@ -41,4 +41,4 @@
 
 - Configurar os secrets e variáveis da Vercel no GitHub e as variáveis do Turso na Vercel ([ci-cd.md](../operacao/ci-cd.md#configuração-uma-vez)).
 - Rodar `npm run db:reset` contra o Turso antes da demo ([deploy.md](../operacao/deploy.md)).
-- Migrar para o Prisma 7 (3 vulnerabilidades altas restantes).
+- Migrar para o Prisma 7. As "3 altas" do `npm audit` são uma única vulnerabilidade, no `deepmerge-ts`, que fica só na CLI do Prisma e não no runtime. A decisão de adiar, com gatilhos e plano, está no [ADR-0008](../decisoes/0008-adiar-migracao-prisma-7.md).

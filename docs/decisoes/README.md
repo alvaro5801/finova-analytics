@@ -11,6 +11,7 @@ Cada decisão que muda como o sistema é construído ganha um ADR curto, com o c
 | [0005](0005-arquitetura-herdada-e-nomes-legados.md) | Preservar a arquitetura herdada e renomear só a camada de UI | Aceita |
 | [0006](0006-artefatos-bmad-locais.md) | Artefatos do BMAD ficam locais; só a documentação vai ao repositório | Aceita |
 | [0007](0007-pipeline-ci-cd.md) | Pipeline de CI/CD com GitHub Actions e deploy pela Vercel CLI | Aceita |
+| [0008](0008-adiar-migracao-prisma-7.md) | Adiar a migração para o Prisma 7 e aceitar temporariamente uma vulnerabilidade alta na CLI | Aceita (temporária) |
 
 ## Modelo
 
