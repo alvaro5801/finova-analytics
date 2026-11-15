@@ -102,6 +102,7 @@ ITERATIONS=10 bash scripts/burn-in.sh # burn-in completo (padrão TEA: 10 itera�
 | Aviso "Deploy ignorado" | Faltam `VERCEL_TOKEN`, `VERCEL_ORG_ID` ou `VERCEL_PROJECT_ID` | Seção "Configuração" |
 | Smoke test falhou em `/api/stats` | Banco Turso sem o schema atual ou variáveis ausentes na Vercel | `npm run db:reset` contra o Turso ([deploy.md](deploy.md)) |
 | E2E falhou | Regressão ou teste instável | Baixe o artefato `playwright-report-*` e rode `npx playwright show-trace` |
+| Teste passa só no retry (`1 flaky` no resumo) | Em geral, interação antes da hidratação: o HTML pré-renderizado aparece antes de o React ligar os listeners | Navegue com `gotoReady` (`e2e/routes.ts`), que espera `<html data-app-ready>`. Valide com o rótulo `burn-in` no PR (5 repetições, sem retry) |
 | Segurança falhou no `npm audit` | Vulnerabilidade crítica em dependência de produção | Atualize a dependência; se não houver correção, registre a exceção num ADR |
 | Resumo da Segurança mostra 3 altas no Prisma | Vulnerabilidade conhecida e aceita na CLI do Prisma 6 | Esperado até a migração ([ADR-0008](../decisoes/0008-adiar-migracao-prisma-7.md)) |
 | Segurança falhou no gitleaks | Segredo no histórico | **Revogue o segredo primeiro** e depois limpe o histórico |
