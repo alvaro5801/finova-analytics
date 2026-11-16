@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { normalizeText } from "@/lib/filters";
 import {
+  Landmark,
   Languages,
   LayoutDashboard,
   Receipt,
@@ -39,6 +40,12 @@ export const mainNavItems: NavItem[] = [
     href: "/billing",
     icon: Receipt,
     keywords: ["faturas", "billing", "pagamento", "cartao", "notas"],
+  },
+  {
+    label: "Integrações",
+    href: "/integrations",
+    icon: Landmark,
+    keywords: ["bancos", "open finance", "conectar", "extrato", "pluggy", "transacoes"],
   },
 ];
 

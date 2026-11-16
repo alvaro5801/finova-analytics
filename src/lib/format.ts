@@ -124,3 +124,15 @@ export function formatDate(iso: string | Date) {
 export function formatDateTime(iso: string | Date) {
   return dateTimeShort.format(new Date(iso));
 }
+
+const relative = new Intl.RelativeTimeFormat(LOCALE, { numeric: "always" });
+
+/** "há 5 minutos", "há 3 horas"... Abaixo de 1 minuto: "agora há pouco". */
+export function formatRelative(iso: string | Date, now = new Date()) {
+  const seconds = Math.round((new Date(iso).getTime() - now.getTime()) / 1000);
+  const abs = Math.abs(seconds);
+  if (abs < 60) return "agora há pouco";
+  if (abs < 3600) return relative.format(Math.round(seconds / 60), "minute");
+  if (abs < 86_400) return relative.format(Math.round(seconds / 3600), "hour");
+  return relative.format(Math.round(seconds / 86_400), "day");
+}

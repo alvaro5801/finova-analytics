@@ -23,6 +23,10 @@ async function main() {
   await prisma.satisfactionRate.deleteMany();
   await prisma.referralPoint.deleteMany();
   await prisma.referralSummary.deleteMany();
+  // Integrações bancárias: filhos antes dos pais (transações → contas → conexões).
+  await prisma.bankTransaction.deleteMany();
+  await prisma.bankAccount.deleteMany();
+  await prisma.bankConnection.deleteMany();
   await prisma.project.deleteMany();
   await prisma.orderEvent.deleteMany();
   await prisma.author.deleteMany();

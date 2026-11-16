@@ -5,6 +5,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ## [Não lançado]
 
 ### Adicionado
+- **Integrações bancárias** (`/integrations`): conexão de bancos via agregador de Open Finance, somente leitura. Integrado à **Pluggy** (sandbox validado de ponta a ponta com o widget oficial `react-pluggy-connect`), com modo demonstração offline quando não há chaves. Cliente da API no servidor, sincronização idempotente, categorias em português, sinal do cartão detectado pelos dados, status da conexão, desconexão que revoga e apaga os dados e webhook autenticado por cabeçalho secreto. Ver [integração bancária](docs/operacao/integracao-bancaria.md).
+- Paginação com janela de páginas (`1 … 9 10 11 … 19`) para listas longas.
 - Sidebar retrátil no desktop: botão na navbar recolhe o menu para um trilho de ícones (só na sessão). No lugar do card de demonstração, o botão **Sair**.
 - Paginação (5 por página) em Equipe financeira, Orçamentos por área, Transações recentes e Faturas, com componente reutilizável.
 - Filtros: Transações recentes (tipo, busca, categoria, com totais do recorte), Equipe financeira (busca, status, departamento) e Orçamentos por área em Relatórios (status, busca, sem orçamento).

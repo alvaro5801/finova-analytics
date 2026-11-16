@@ -3,6 +3,10 @@ import type {
   ActiveUsersResponse,
   AuthResponse,
   AuthorData,
+  BankInstitutionData,
+  BankTransactionData,
+  ConnectResultData,
+  IntegrationsResponse,
   InvoiceData,
   OrderEventData,
   ProjectData,
@@ -26,7 +30,7 @@ interface SignUpPayload {
 export const dashboardApi = createApi({
   reducerPath: "dashboardApi",
   baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
-  tagTypes: ["Stats", "Projects", "Orders", "Authors", "Invoices"],
+  tagTypes: ["Stats", "Projects", "Orders", "Authors", "Invoices", "Integrations"],
   endpoints: (builder) => ({
     getStats: builder.query<StatCardData[], void>({
       query: () => "/stats",
@@ -69,6 +73,43 @@ export const dashboardApi = createApi({
       transformResponse: (res: { data: InvoiceData[] }) => res.data,
       providesTags: ["Invoices"],
     }),
+    getIntegrations: builder.query<IntegrationsResponse, void>({
+      query: () => "/integrations",
+      transformResponse: (res: { data: IntegrationsResponse }) => res.data,
+      providesTags: ["Integrations"],
+    }),
+    getBankInstitutions: builder.query<BankInstitutionData[], void>({
+      query: () => "/integrations/institutions",
+      transformResponse: (res: { data: BankInstitutionData[] }) => res.data,
+    }),
+    getBankTransactions: builder.query<BankTransactionData[], void>({
+      query: () => "/integrations/transactions",
+      transformResponse: (res: { data: BankTransactionData[] }) => res.data,
+      providesTags: ["Integrations"],
+    }),
+    createConnectToken: builder.mutation<{ mode: string; connectToken: string }, void>({
+      query: () => ({ url: "/integrations/connect-token", method: "POST" }),
+      transformResponse: (res: { data: { mode: string; connectToken: string } }) => res.data,
+    }),
+    authorizeDemoBank: builder.mutation<{ itemId: string }, { connectToken: string; institutionId: string }>({
+      query: (body) => ({ url: "/integrations/demo/authorize", method: "POST", body }),
+      transformResponse: (res: { data: { itemId: string } }) => res.data,
+    }),
+    createBankConnection: builder.mutation<ConnectResultData, { itemId: string }>({
+      query: (body) => ({ url: "/integrations/connections", method: "POST", body }),
+      transformResponse: (res: { data: ConnectResultData }) => res.data,
+      invalidatesTags: ["Integrations"],
+    }),
+    syncBankConnection: builder.mutation<{ accounts: number; imported: number }, number>({
+      query: (id) => ({ url: `/integrations/connections/${id}/sync`, method: "POST" }),
+      transformResponse: (res: { data: { accounts: number; imported: number } }) => res.data,
+      invalidatesTags: ["Integrations"],
+    }),
+    deleteBankConnection: builder.mutation<{ id: number }, number>({
+      query: (id) => ({ url: `/integrations/connections/${id}`, method: "DELETE" }),
+      transformResponse: (res: { data: { id: number } }) => res.data,
+      invalidatesTags: ["Integrations"],
+    }),
     signIn: builder.mutation<AuthResponse, SignInPayload>({
       query: (body) => ({ url: "/auth/sign-in", method: "POST", body }),
       transformResponse: (res: { data: AuthResponse }) => res.data,
@@ -90,6 +131,14 @@ export const {
   useGetOrdersQuery,
   useGetAuthorsQuery,
   useGetInvoicesQuery,
+  useGetIntegrationsQuery,
+  useGetBankInstitutionsQuery,
+  useGetBankTransactionsQuery,
+  useCreateConnectTokenMutation,
+  useAuthorizeDemoBankMutation,
+  useCreateBankConnectionMutation,
+  useSyncBankConnectionMutation,
+  useDeleteBankConnectionMutation,
   useSignInMutation,
   useSignUpMutation,
 } = dashboardApi;

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { paginate } from "@/lib/pagination";
+import { pageWindow, paginate } from "@/lib/pagination";
 
 export const DEFAULT_PAGE_SIZE = 5;
 
@@ -54,7 +54,13 @@ export function Pagination({
         >
           <ChevronLeft size={16} aria-hidden="true" className="rtl:-scale-x-100" />
         </button>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => {
+        {pageWindow(page, totalPages).map((n, i) => {
+          if (n === "…")
+            return (
+              <span key={`gap-${i}`} aria-hidden="true" className="px-1 text-xs text-muted">
+                …
+              </span>
+            );
           const active = n === page;
           return (
             <button

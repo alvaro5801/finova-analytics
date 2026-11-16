@@ -145,3 +145,58 @@ model Invoice {
   amountCents Int
   order       Int      @default(0)
 }
+
+// ── Integrações bancárias (Open Finance via agregador, somente leitura) ──
+// Nunca guardamos senha ou credencial do banco: o usuário se autentica no próprio
+// banco, dentro do widget do agregador, e recebemos só a referência da conexão (`itemId`).
+
+// Uma conexão = um banco autorizado por um usuário.
+model BankConnection {
+  id               Int           @id @default(autoincrement())
+  /// Dono da conexão. Com login real, vira o id do usuário autenticado.
+  userId           String
+  /// "demo" | "pluggy"
+  provider         String
+  /// Referência da conexão no agregador (Item da Pluggy).
+  itemId           String        @unique
+  institutionName  String
+  /// Cor da instituição em hex, sem "#".
+  institutionColor String
+  /// "connected" | "syncing" | "error" | "reconnect"
+  status           String
+  lastSyncAt       DateTime?
+  consentExpiresAt DateTime?
+  createdAt        DateTime      @default(now())
+  accounts         BankAccount[]
+
+  @@index([userId])
+}
+
+model BankAccount {
+  id           Int               @id @default(autoincrement())
+  connectionId Int
+  connection   BankConnection    @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  externalId   String            @unique
+  /// "BANK" (conta) | "CREDIT" (cartão de crédito)
+  type         String
+  name         String
+  /// Final do número, já mascarado ("•••• 1234").
+  number       String
+  /// Conta: saldo. Cartão: fatura em aberto (positivo = valor devido).
+  balanceCents Int
+  transactions BankTransaction[]
+}
+
+// `amountCents` segue a convenção do resto do app: positivo = entrada, negativo = saída.
+model BankTransaction {
+  id          Int         @id @default(autoincrement())
+  accountId   Int
+  account     BankAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  externalId  String      @unique
+  date        DateTime
+  description String
+  category    String
+  amountCents Int
+
+  @@index([accountId, date])
+}

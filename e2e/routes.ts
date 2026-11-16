@@ -5,6 +5,7 @@ export const ROUTES = [
   { path: "/dashboard", heading: "Visão geral", ready: "Receita do mês" },
   { path: "/tables", heading: "Relatórios", ready: "Equipe financeira" },
   { path: "/billing", heading: "Faturamento", ready: "Histórico da assinatura" },
+  { path: "/integrations", heading: "Integrações", ready: "Como protegemos seus dados" },
   { path: "/profile", heading: "Perfil", ready: "Informações do perfil" },
   { path: "/rtl", heading: "Prévia RTL", ready: "Receita semanal" },
   { path: "/sign-in", heading: "Entrar", ready: "Acesse o painel" },

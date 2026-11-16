@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import type { AuthorData, OrderEventData, ProjectData } from "../types/dashboard.ts";
-import { filterBudgets, filterTeam, filterTransactions, matchesQuery, uniqueSorted } from "./filters.ts";
+import { filterBankTransactions, filterBudgets, filterTeam, filterTransactions, matchesQuery, uniqueSorted } from "./filters.ts";
 
 const order = (id: number, title: string, description: string, amountCents: number) =>
   ({ id, title, description, amountCents }) as OrderEventData;
@@ -65,5 +65,28 @@ describe("filterBudgets", () => {
 describe("uniqueSorted", () => {
   test("remove repetidos e ordena em português", () => {
     assert.deepEqual(uniqueSorted(["Pessoal", "Ajustes", "Pessoal", "Ética"]), ["Ajustes", "Ética", "Pessoal"]);
+  });
+});
+
+describe("filterBankTransactions", () => {
+  const tx = (id: number, description: string, category: string, amountCents: number, institutionName: string) => ({
+    id,
+    description,
+    category,
+    amountCents,
+    institutionName,
+  });
+  const imported = [
+    tx(1, "Salário", "Salário", 1_250_000, "Banco Horizonte"),
+    tx(2, "Supermercado", "Alimentação", -30_000, "Banco Horizonte"),
+    tx(3, "Restaurante", "Alimentação", -9_000, "Aurora Digital"),
+  ];
+
+  test("combina busca, tipo, categoria e banco", () => {
+    const all = { query: "", type: "all" as const, category: "", institution: "" };
+    assert.deepEqual(filterBankTransactions(imported, { ...all, category: "Alimentação" }).map((t) => t.id), [2, 3]);
+    assert.deepEqual(filterBankTransactions(imported, { ...all, type: "in" }).map((t) => t.id), [1]);
+    assert.deepEqual(filterBankTransactions(imported, { ...all, institution: "Aurora Digital" }).map((t) => t.id), [3]);
+    assert.deepEqual(filterBankTransactions(imported, { ...all, query: "alimentacao", type: "out" }).map((t) => t.id), [2, 3]);
   });
 });

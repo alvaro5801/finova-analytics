@@ -33,6 +33,8 @@ export default defineConfig({
     command: `npm run build && npm run start -- -p ${PORT}`,
     url: `http://localhost:${PORT}/api/stats`,
     reuseExistingServer: !process.env.CI,
+    // Os testes usam sempre o banco de demonstração, mesmo com chaves da Pluggy no .env.local.
+    env: { BANKING_PROVIDER: "demo" },
     timeout: 240_000,
   },
 });
