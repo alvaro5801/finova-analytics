@@ -10,7 +10,8 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   try {
     if (connection.provider === "demo") await simulateLatency(400, 800);
     return ok(await syncConnection(id));
-  } catch {
+  } catch (error) {
+    console.error("[integrações] falha ao sincronizar:", error);
     return fail("A sincronização falhou. Tente novamente em instantes.", 502);
   }
 }

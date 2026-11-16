@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { Pencil, ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
-import { ClearFiltersButton, EmptyResults, FilterStatus, SearchField } from "@/components/ui/Filters";
+import { ActiveFilters, EmptyResults, SearchField, type ActiveFilter } from "@/components/ui/Filters";
 import { Pagination, usePagination } from "@/components/ui/Pagination";
 import { SegmentedControl, type SegmentOption } from "@/components/ui/SegmentedControl";
 import { AccountDialog, ConfirmRemoveDialog } from "@/components/profile/AccountDialogs";
@@ -60,7 +60,6 @@ export function AccountsCard() {
     [accounts, role, query],
   );
   const pagination = usePagination(filtered);
-  const active = query !== "" || role !== "all";
 
   // `open` separado do alvo: o conteúdo do modal não muda durante a animação de saída.
   const [editor, setEditor] = useState<{ open: boolean; account?: Account }>({ open: false });
@@ -92,6 +91,18 @@ export function AccountsCard() {
     apply();
     pagination.setPage(1);
   };
+  const clearFilters = () =>
+    update(() => {
+      setQuery("");
+      setRole("all");
+    });
+  const roleLabel = ROLE_FILTERS.find((r) => r.value === role)?.label;
+  const activeFilters: ActiveFilter[] = [
+    ...(role !== "all" && roleLabel ? [{ key: "role", label: roleLabel, onRemove: () => update(() => setRole("all")) }] : []),
+    ...(query.trim()
+      ? [{ key: "query", label: `Busca: “${query.trim()}”`, onRemove: () => update(() => setQuery("")) }]
+      : []),
+  ];
 
   return (
     <Card>
@@ -130,29 +141,17 @@ export function AccountsCard() {
           value={role}
           onChange={(value) => update(() => setRole(value))}
         />
-        {active && (
-          <ClearFiltersButton
-            onClick={() =>
-              update(() => {
-                setQuery("");
-                setRole("all");
-              })
-            }
-          />
-        )}
-        <FilterStatus count={filtered.length} total={accounts.length} />
       </div>
+      <ActiveFilters
+        filters={activeFilters}
+        onClearAll={clearFilters}
+        count={filtered.length}
+        total={accounts.length}
+        noun="contas"
+      />
 
       {filtered.length === 0 ? (
-        <EmptyResults
-          message="Nenhuma conta encontrada."
-          onClear={() =>
-            update(() => {
-              setQuery("");
-              setRole("all");
-            })
-          }
-        />
+        <EmptyResults message="Nenhuma conta encontrada." onClear={clearFilters} />
       ) : (
         // Focável para quem rola pelo teclado quando a tabela não cabe (WCAG 2.1.1).
         <div

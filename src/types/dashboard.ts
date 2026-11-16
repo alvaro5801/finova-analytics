@@ -158,6 +158,14 @@ export interface BankAccountData {
   number: string;
   /** Conta: saldo. Cartão: fatura em aberto. */
   balanceCents: number;
+  /** Campos só de cartão de crédito (nulos em conta corrente). */
+  brand: string | null;
+  level: string | null;
+  creditLimitCents: number | null;
+  availableLimitCents: number | null;
+  billCloseDate: string | null;
+  billDueDate: string | null;
+  minimumPaymentCents: number | null;
   transactionCount: number;
 }
 
@@ -166,6 +174,7 @@ export interface BankConnectionData {
   provider: BankingMode;
   institutionName: string;
   institutionColor: string;
+  institutionImageUrl: string | null;
   status: BankConnectionStatus;
   lastSyncAt: string | null;
   consentExpiresAt: string | null;
@@ -183,6 +192,9 @@ export interface BankInstitutionData {
   id: string;
   name: string;
   color: string;
+  imageUrl: string | null;
+  openFinance: boolean;
+  sandbox: boolean;
 }
 
 export interface BankTransactionData {
@@ -196,6 +208,16 @@ export interface BankTransactionData {
   accountName: string;
   connectionId: number;
   institutionName: string;
+}
+
+/** Visão geral calculada com as transações dos bancos conectados. */
+export interface BankSummaryData {
+  periodKey: string;
+  stats: StatCardData[];
+  sales: SalesPointData[];
+  orders: OrderEventData[];
+  transactionCount: number;
+  institutions: string[];
 }
 
 export interface ConnectResultData {

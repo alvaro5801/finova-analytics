@@ -6,30 +6,41 @@ export function CreditCard({
   number,
   holder,
   expires,
+  meta,
+  tag,
   primary,
+  imported = false,
   className,
 }: {
   brand: string;
   number: string;
   holder: string;
-  expires: string;
+  /** Validade ("08/28"). Cartões importados do banco não têm: usam `meta`. */
+  expires?: string;
+  /** Texto no canto inferior direito no lugar da validade (ex.: "Vence 21/11"). */
+  meta?: string;
+  /** Selo no canto superior direito; por padrão, "Principal" no cartão principal. */
+  tag?: string;
   primary: boolean;
+  /** Cartão vindo do banco (Open Finance): fundo próprio para não confundir com os cadastrados. */
+  imported?: boolean;
   className?: string;
 }) {
+  const chip = tag ?? (primary ? "Principal" : undefined);
   return (
     <div
       className={clsx(
         "relative overflow-hidden rounded-2xl p-5 text-white ring-1 ring-inset ring-white/10",
-        primary ? "grad-primary" : "grad-dark",
+        imported ? "grad-info" : primary ? "grad-primary" : "grad-dark",
         className,
       )}
     >
       <div aria-hidden="true" className="absolute -right-10 -top-16 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
       <div className="relative flex items-start justify-between">
         <span className="text-sm font-semibold tracking-wide">{brand}</span>
-        {primary && (
+        {chip && (
           <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
-            Principal
+            {chip}
           </span>
         )}
       </div>
@@ -40,7 +51,7 @@ export function CreditCard({
       <p className="relative mt-4 truncate font-mono text-base tracking-[0.18em] tabular-nums">{number}</p>
       <div className="relative mt-3 flex justify-between gap-3 text-[11px] uppercase tracking-wide text-white/70">
         <span className="truncate">{holder}</span>
-        <span className="shrink-0">Val. {expires}</span>
+        <span className="shrink-0">{meta ?? (expires ? `Val. ${expires}` : "")}</span>
       </div>
     </div>
   );

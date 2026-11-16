@@ -1,21 +1,29 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
-import { Download, FileText } from "lucide-react";
+import { Download, Eye, FileText } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
 import { Pagination, usePagination } from "@/components/ui/Pagination";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatBRL, formatDate } from "@/lib/format";
 import { useAppSelector } from "@/store/hooks";
-import { downloadInvoicePdf } from "@/components/billing/invoicePdf";
+import { downloadInvoicePdf, invoiceDocument, type InvoiceDocument } from "@/components/billing/invoicePdf";
+import { InvoicePreviewDialog } from "@/components/billing/InvoicePreviewDialog";
 import { motionTokens } from "@/lib/tokens";
 import type { InvoiceData } from "@/types/dashboard";
+
+const rowButton =
+  "fn-press inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/[0.06] hover:text-fg";
 
 export function InvoicesCard({ invoices }: { invoices: InvoiceData[] }) {
   const pagination = usePagination(invoices);
   const primaryCard = useAppSelector((state) => state.billing.cards.find((card) => card.primary));
   const paymentMethod = primaryCard ? `${primaryCard.brand} •••• ${primaryCard.last4}` : "Débito automático";
+  // `open` separado do documento: o conteúdo não some durante a animação de saída.
+  const [preview, setPreview] = useState<{ open: boolean; doc?: InvoiceDocument }>({ open: false });
+  const closePreview = useCallback(() => setPreview((p) => ({ ...p, open: false })), []);
 
   return (
     <Card className="flex h-full flex-col">
@@ -37,15 +45,27 @@ export function InvoicesCard({ invoices }: { invoices: InvoiceData[] }) {
               <p className="font-mono text-xs text-muted">{invoice.code}</p>
             </div>
             <span className="text-sm font-semibold text-fg tabular-nums">{formatBRL(invoice.amountCents)}</span>
-            <button
-              type="button"
-              onClick={() => downloadInvoicePdf(invoice, paymentMethod)}
-              aria-label={`Baixar PDF da fatura ${invoice.code}`}
-              className="fn-press inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/[0.06] hover:text-fg"
-            >
-              <Download size={14} aria-hidden="true" />
-              <span className="hidden sm:inline">PDF</span>
-            </button>
+            <div className="flex shrink-0 items-center">
+              <button
+                type="button"
+                onClick={() => setPreview({ open: true, doc: invoiceDocument(invoice, paymentMethod) })}
+                aria-label={`Ver fatura ${invoice.code}`}
+                aria-haspopup="dialog"
+                className={rowButton}
+              >
+                <Eye size={14} aria-hidden="true" />
+                <span className="hidden sm:inline">Ver</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => downloadInvoicePdf(invoiceDocument(invoice, paymentMethod))}
+                aria-label={`Baixar PDF da fatura ${invoice.code}`}
+                className={rowButton}
+              >
+                <Download size={14} aria-hidden="true" />
+                <span className="hidden sm:inline">PDF</span>
+              </button>
+            </div>
           </motion.li>
         ))}
       </ul>
@@ -55,6 +75,7 @@ export function InvoicesCard({ invoices }: { invoices: InvoiceData[] }) {
         label="Paginação das faturas"
         className="mt-auto"
       />
+      <InvoicePreviewDialog open={preview.open} doc={preview.doc} onClose={closePreview} />
     </Card>
   );
 }

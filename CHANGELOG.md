@@ -5,6 +5,12 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ## [Não lançado]
 
 ### Adicionado
+- Visão geral com dados reais: com banco conectado, indicadores (receita, despesas, saldo em conta e resultado do mês), resumo do mês, receita × despesas e transações recentes passam a ser calculados com as transações importadas, com o seletor "Meus bancos | Demonstração". Pagamentos de fatura ficam fora de receita e despesas, porque são transferência entre as próprias contas.
+- Filtros: linha de filtros ativos abaixo da barra de controles, com chips removíveis um a um, "Limpar tudo" e contagem visível ("12 de 184 transações"), nas 5 listas filtráveis. A barra não muda mais de tamanho ao filtrar (antes o botão "Limpar filtros" entrava e saía, deslocando os controles).
+- Transações importadas: estado próprio para "nenhuma transação ainda", separado de "nenhum resultado para os filtros".
+- Integrações: lista de bancos própria do Finova, com os logos reais da Pluggy (só os bancos liberados na conta); o widget abre direto no banco escolhido. As conexões mostram o logo do banco.
+- Faturamento: cartões de crédito do banco conectado (Open Finance) em "Formas de pagamento", com bandeira, categoria, limite usado, fatura atual, fechamento, vencimento (destacado quando faltam até 5 dias) e pagamento mínimo.
+- Faturas: pré-visualização na tela antes de baixar, com o mesmo conteúdo do PDF (prévia em HTML, que funciona também no celular).
 - **Integrações bancárias** (`/integrations`): conexão de bancos via agregador de Open Finance, somente leitura. Integrado à **Pluggy** (sandbox validado de ponta a ponta com o widget oficial `react-pluggy-connect`), com modo demonstração offline quando não há chaves. Cliente da API no servidor, sincronização idempotente, categorias em português, sinal do cartão detectado pelos dados, status da conexão, desconexão que revoga e apaga os dados e webhook autenticado por cabeçalho secreto. Ver [integração bancária](docs/operacao/integracao-bancaria.md).
 - Paginação com janela de páginas (`1 … 9 10 11 … 19`) para listas longas.
 - Sidebar retrátil no desktop: botão na navbar recolhe o menu para um trilho de ícones (só na sessão). No lugar do card de demonstração, o botão **Sair**.
@@ -18,6 +24,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Testes unitários de `src/lib/format.ts` com `node:test` (17 casos, sem dependência nova), rodando no job Qualidade do CI ([ADR-0010](docs/decisoes/0010-testes-unitarios-node-test.md)).
 
 ### Corrigido
+- Integrações: login do MeuPluggy falhava com "opened too many login dialogs" em desenvolvimento. O widget da Pluggy passou a ser criado uma única vez (componente próprio sobre o `pluggy-connect-sdk`, no lugar do `react-pluggy-connect`, que duplicava a instância na montagem dupla do React).
+- Integrações: erros das rotas passam a ser registrados no log do servidor, em vez de virarem só "Tente novamente" na tela.
 - Teste E2E instável no CI (atalho `/` da busca, que falhou na primeira tentativa e passou no retry). Os testes agora esperam `<html data-app-ready>`, um sinal de que o React hidratou e os listeners existem, antes de interagir (`gotoReady`).
 - Acessibilidade (WCAG 2.5.3): os botões 3M/6M/12M e o link do logo agora têm nome acessível que contém o texto visível.
 - Acessibilidade (WCAG 2.1.1): as tabelas com rolagem horizontal podem ser roladas pelo teclado.

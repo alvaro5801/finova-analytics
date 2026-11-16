@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
 import { AddCardDialog } from "@/components/billing/AddCardDialog";
+import { BankCards } from "@/components/billing/BankCards";
 import { CreditCard } from "@/components/billing/CreditCard";
 import { motionTokens } from "@/lib/tokens";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -30,7 +31,7 @@ export function PaymentMethodCard() {
     <Card className="h-full">
       <CardHeader
         title="Formas de pagamento"
-        subtitle="Cartões corporativos cadastrados"
+        subtitle="Cartões cadastrados e cartões do seu banco"
         action={
           <button
             type="button"
@@ -62,6 +63,7 @@ export function PaymentMethodCard() {
           </motion.li>
         ))}
       </ul>
+      <BankCards />
       <p className="sr-only" aria-live="polite">
         {announcement}
       </p>

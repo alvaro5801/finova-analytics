@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
 import { Pagination, usePagination } from "@/components/ui/Pagination";
 import { SegmentedControl, type SegmentOption } from "@/components/ui/SegmentedControl";
-import { ClearFiltersButton, EmptyResults, FilterStatus, SearchField, ToggleChip } from "@/components/ui/Filters";
+import { ActiveFilters, EmptyResults, SearchField, ToggleChip, type ActiveFilter } from "@/components/ui/Filters";
 import { filterBudgets, type BudgetFilters } from "@/lib/filters";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatBRL } from "@/lib/format";
@@ -53,13 +53,22 @@ export function BudgetsCard({ projects, filterable = false }: { projects: Projec
   const [filters, setFilters] = useState(NO_FILTERS);
   const filtered = useMemo(() => filterBudgets(projects, filters), [projects, filters]);
   const pagination = usePagination(filtered);
-  const active = filters.status !== "all" || filters.query !== "" || filters.noBudget;
 
   const update = (patch: Partial<BudgetFilters>) => {
     setFilters((current) => ({ ...current, ...patch }));
     pagination.setPage(1);
   };
   const clear = () => update(NO_FILTERS);
+  const statusLabel = STATUS_FILTERS.find((s) => s.value === filters.status)?.label;
+  const activeFilters: ActiveFilter[] = [
+    ...(filters.status !== "all" && statusLabel
+      ? [{ key: "status", label: statusLabel, onRemove: () => update({ status: "all" }) }]
+      : []),
+    ...(filters.noBudget ? [{ key: "noBudget", label: "Sem orçamento", onRemove: () => update({ noBudget: false }) }] : []),
+    ...(filters.query.trim()
+      ? [{ key: "query", label: `Busca: “${filters.query.trim()}”`, onRemove: () => update({ query: "" }) }]
+      : []),
+  ];
 
   return (
     <Card className="flex h-full flex-col">
@@ -82,9 +91,16 @@ export function BudgetsCard({ projects, filterable = false }: { projects: Projec
           <ToggleChip pressed={filters.noBudget} onChange={(noBudget) => update({ noBudget })}>
             Sem orçamento
           </ToggleChip>
-          {active && <ClearFiltersButton onClick={clear} />}
-          <FilterStatus count={filtered.length} total={projects.length} />
         </div>
+      )}
+      {filterable && (
+        <ActiveFilters
+          filters={activeFilters}
+          onClearAll={clear}
+          count={filtered.length}
+          total={projects.length}
+          noun="áreas"
+        />
       )}
 
       {/* Focável para quem rola pelo teclado quando a tabela não cabe (WCAG 2.1.1). */}

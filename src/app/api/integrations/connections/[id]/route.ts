@@ -11,7 +11,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   try {
     await providerFor(connection.provider).deleteItem(connection.itemId);
-  } catch {
+  } catch (error) {
+    console.error("[integrações] falha ao revogar no agregador:", error);
     return fail("Não foi possível revogar o acesso no banco. Tente novamente.", 502);
   }
   await deleteConnectionData(id);

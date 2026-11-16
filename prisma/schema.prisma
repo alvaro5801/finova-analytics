@@ -152,39 +152,49 @@ model Invoice {
 
 // Uma conexão = um banco autorizado por um usuário.
 model BankConnection {
-  id               Int           @id @default(autoincrement())
+  id                  Int           @id @default(autoincrement())
   /// Dono da conexão. Com login real, vira o id do usuário autenticado.
-  userId           String
+  userId              String
   /// "demo" | "pluggy"
-  provider         String
+  provider            String
   /// Referência da conexão no agregador (Item da Pluggy).
-  itemId           String        @unique
-  institutionName  String
+  itemId              String        @unique
+  institutionName     String
   /// Cor da instituição em hex, sem "#".
-  institutionColor String
+  institutionColor    String
+  /// Logo da instituição (URL do agregador); nulo nos bancos de demonstração.
+  institutionImageUrl String?
   /// "connected" | "syncing" | "error" | "reconnect"
-  status           String
-  lastSyncAt       DateTime?
-  consentExpiresAt DateTime?
-  createdAt        DateTime      @default(now())
-  accounts         BankAccount[]
+  status              String
+  lastSyncAt          DateTime?
+  consentExpiresAt    DateTime?
+  createdAt           DateTime      @default(now())
+  accounts            BankAccount[]
 
   @@index([userId])
 }
 
 model BankAccount {
-  id           Int               @id @default(autoincrement())
-  connectionId Int
-  connection   BankConnection    @relation(fields: [connectionId], references: [id], onDelete: Cascade)
-  externalId   String            @unique
+  id                  Int               @id @default(autoincrement())
+  connectionId        Int
+  connection          BankConnection    @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  externalId          String            @unique
   /// "BANK" (conta) | "CREDIT" (cartão de crédito)
-  type         String
-  name         String
+  type                String
+  name                String
   /// Final do número, já mascarado ("•••• 1234").
-  number       String
+  number              String
   /// Conta: saldo. Cartão: fatura em aberto (positivo = valor devido).
-  balanceCents Int
-  transactions BankTransaction[]
+  balanceCents        Int
+  // Só cartões de crédito (creditData da Pluggy):
+  brand               String?
+  level               String?
+  creditLimitCents    Int?
+  availableLimitCents Int?
+  billCloseDate       DateTime?
+  billDueDate         DateTime?
+  minimumPaymentCents Int?
+  transactions        BankTransaction[]
 }
 
 // `amountCents` segue a convenção do resto do app: positivo = entrada, negativo = saída.

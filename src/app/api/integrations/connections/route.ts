@@ -26,12 +26,14 @@ export async function POST(request: Request) {
           itemId,
           institutionName: item.institutionName,
           institutionColor: item.institutionColor,
+          institutionImageUrl: item.institutionImageUrl ?? null,
           status: "syncing",
         },
       }));
     const result = await syncConnection(connection.id);
     return ok({ id: connection.id, institutionName: item.institutionName, ...result }, existing ? 200 : 201);
-  } catch {
+  } catch (error) {
+    console.error("[integrações] falha ao importar a conexão:", error);
     return fail("Não foi possível importar os dados do banco. Tente novamente.", 502);
   }
 }

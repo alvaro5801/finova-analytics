@@ -36,6 +36,11 @@ test.describe("rotas", () => {
 });
 
 test.describe("dashboard financeiro", () => {
+  // Valores fixos da demonstração: sem banco conectado (outro teste conecta um em paralelo).
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/api/integrations/summary", (route) => route.fulfill({ json: { data: null } }));
+  });
+
   test("KPIs exibem valores em BRL", async ({ page }) => {
     await gotoReady(page, "/dashboard");
     const kpis = page.getByRole("region", { name: "Indicadores principais" });
@@ -132,6 +137,7 @@ test.describe("movimento reduzido", () => {
   test.use({ reducedMotion: "reduce" });
 
   test("KPIs aparecem com o valor final, sem contagem, e transições CSS ficam congeladas", async ({ page }) => {
+    await page.route("**/api/integrations/summary", (route) => route.fulfill({ json: { data: null } }));
     await gotoReady(page, "/dashboard");
     const kpis = page.getByRole("region", { name: "Indicadores principais" });
     await kpis.getByText("Receita do mês").waitFor();

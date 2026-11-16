@@ -4,6 +4,7 @@ import type {
   AuthResponse,
   AuthorData,
   BankInstitutionData,
+  BankSummaryData,
   BankTransactionData,
   ConnectResultData,
   IntegrationsResponse,
@@ -82,6 +83,11 @@ export const dashboardApi = createApi({
       query: () => "/integrations/institutions",
       transformResponse: (res: { data: BankInstitutionData[] }) => res.data,
     }),
+    getBankSummary: builder.query<BankSummaryData | null, void>({
+      query: () => "/integrations/summary",
+      transformResponse: (res: { data: BankSummaryData | null }) => res.data,
+      providesTags: ["Integrations"],
+    }),
     getBankTransactions: builder.query<BankTransactionData[], void>({
       query: () => "/integrations/transactions",
       transformResponse: (res: { data: BankTransactionData[] }) => res.data,
@@ -134,6 +140,7 @@ export const {
   useGetIntegrationsQuery,
   useGetBankInstitutionsQuery,
   useGetBankTransactionsQuery,
+  useGetBankSummaryQuery,
   useCreateConnectTokenMutation,
   useAuthorizeDemoBankMutation,
   useCreateBankConnectionMutation,

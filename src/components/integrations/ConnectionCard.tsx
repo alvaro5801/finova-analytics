@@ -42,7 +42,12 @@ export function ConnectionCard({ connection }: { connection: BankConnectionData 
   return (
     <Card className="flex h-full flex-col">
       <div className="flex items-start gap-3">
-        <InstitutionBadge name={connection.institutionName} color={connection.institutionColor} size="lg" />
+        <InstitutionBadge
+          name={connection.institutionName}
+          color={connection.institutionColor}
+          imageUrl={connection.institutionImageUrl}
+          size="lg"
+        />
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-base font-semibold text-fg">{connection.institutionName}</h3>
           <p className="mt-0.5 text-xs text-muted">
