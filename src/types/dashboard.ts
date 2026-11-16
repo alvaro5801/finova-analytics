@@ -146,3 +146,61 @@ export interface AuthResponse {
   user: AuthUser;
   token: string;
 }
+
+// ── Integrações bancárias ──
+export type BankingMode = "demo" | "pluggy";
+export type BankConnectionStatus = "connected" | "syncing" | "error" | "reconnect";
+
+export interface BankAccountData {
+  id: number;
+  type: "BANK" | "CREDIT";
+  name: string;
+  number: string;
+  /** Conta: saldo. Cartão: fatura em aberto. */
+  balanceCents: number;
+  transactionCount: number;
+}
+
+export interface BankConnectionData {
+  id: number;
+  provider: BankingMode;
+  institutionName: string;
+  institutionColor: string;
+  status: BankConnectionStatus;
+  lastSyncAt: string | null;
+  consentExpiresAt: string | null;
+  createdAt: string;
+  accounts: BankAccountData[];
+}
+
+export interface IntegrationsResponse {
+  mode: BankingMode;
+  sandbox: boolean;
+  connections: BankConnectionData[];
+}
+
+export interface BankInstitutionData {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface BankTransactionData {
+  id: number;
+  date: string;
+  description: string;
+  category: string;
+  /** Positivo = entrada, negativo = saída. */
+  amountCents: number;
+  accountType: "BANK" | "CREDIT";
+  accountName: string;
+  connectionId: number;
+  institutionName: string;
+}
+
+export interface ConnectResultData {
+  id: number;
+  institutionName: string;
+  accounts: number;
+  imported: number;
+}

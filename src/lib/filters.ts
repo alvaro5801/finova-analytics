@@ -65,3 +65,23 @@ export function filterBudgets(projects: ProjectData[], f: BudgetFilters) {
       matchesQuery([p.name], f.query),
   );
 }
+
+export interface BankTransactionFilters {
+  query: string;
+  type: TransactionType;
+  category: string;
+  /** Vazio = todos os bancos. */
+  institution: string;
+}
+
+export function filterBankTransactions<
+  T extends { description: string; category: string; amountCents: number; institutionName: string },
+>(transactions: T[], f: BankTransactionFilters) {
+  return transactions.filter(
+    (t) =>
+      (f.type === "all" || (f.type === "in" ? t.amountCents > 0 : t.amountCents < 0)) &&
+      (!f.category || t.category === f.category) &&
+      (!f.institution || t.institutionName === f.institution) &&
+      matchesQuery([t.description, t.category], f.query),
+  );
+}

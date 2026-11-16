@@ -19,6 +19,7 @@ import {
   formatMonthShort,
   formatNumber,
   formatPercent,
+  formatRelative,
   formatSignedBRL,
 } from "./format.ts";
 
@@ -121,5 +122,15 @@ describe("meses e datas (pt-BR)", () => {
   test("formatDate e formatDateTime no fuso de Brasília", () => {
     assert.equal(formatDate("2026-11-15T15:00:00.000Z"), "15 de nov. de 2026");
     assert.equal(formatDateTime("2026-11-15T15:32:00.000Z"), "15 de nov., 12:32");
+  });
+});
+
+describe("formatRelative", () => {
+  const now = new Date("2026-11-15T12:00:00-03:00");
+  test("descreve há quanto tempo, em português", () => {
+    assert.equal(formatRelative(new Date("2026-11-15T11:59:40-03:00"), now), "agora há pouco");
+    assert.equal(formatRelative(new Date("2026-11-15T11:55:00-03:00"), now), "há 5 minutos");
+    assert.equal(formatRelative(new Date("2026-11-15T09:00:00-03:00"), now), "há 3 horas");
+    assert.equal(formatRelative(new Date("2026-11-13T12:00:00-03:00"), now), "há 2 dias");
   });
 });
