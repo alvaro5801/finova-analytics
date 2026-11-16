@@ -22,6 +22,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - Valores negativos em `formatBRL` usavam o hífen (U+002D), enquanto o resto da interface usa o menos tipográfico (U+2212). Bug encontrado pelos novos testes unitários.
 
 ### Alterado
+- Prisma mantido na 6.19.3: o bump automático para a 7 (Dependabot) quebrava o `prisma generate`, porque o Prisma 7 não aceita mais `url` no `schema.prisma`. A migração continua planejada à parte ([ADR-0008](docs/decisoes/0008-adiar-migracao-prisma-7.md)).
 - Nova paleta: base neutra quase preta, verde-água como cor principal (item ativo, foco, botões com texto escuro), azul-céu para destaques e tons de status dessaturados. Sem roxo nem degradês. Gráficos em azul (receita) e terracota (despesas), validados para daltonismo.
 - Sidebar sem "Entrar" e "Criar conta"; busca de páginas sem essas opções e sem a Prévia RTL; navbar sem o botão "Entrar".
 - Dependabot: atualizações de versão mensais e agrupadas, com cooldown (3/7/30 dias para patch/minor/major); `@types/node` acompanha o Node 24; majors do TypeScript ficam para migração planejada ([ADR-0009](docs/decisoes/0009-politica-de-dependencias.md)).
