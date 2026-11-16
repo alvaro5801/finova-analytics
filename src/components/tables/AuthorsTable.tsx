@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
 import { Pagination, usePagination } from "@/components/ui/Pagination";
 import { SegmentedControl, type SegmentOption } from "@/components/ui/SegmentedControl";
-import { ClearFiltersButton, EmptyResults, FilterStatus, SearchField, SelectField } from "@/components/ui/Filters";
+import { ActiveFilters, EmptyResults, SearchField, SelectField, type ActiveFilter } from "@/components/ui/Filters";
 import { filterTeam, uniqueSorted, type TeamFilters } from "@/lib/filters";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { motionTokens } from "@/lib/tokens";
@@ -36,13 +36,23 @@ export function AuthorsTable({ authors }: { authors: AuthorData[] }) {
   const departments = useMemo(() => uniqueSorted(authors.map((a) => a.department)), [authors]);
   const filtered = useMemo(() => filterTeam(authors, filters), [authors, filters]);
   const pagination = usePagination(filtered);
-  const active = filters.query !== "" || filters.status !== "all" || filters.department !== "";
 
   const update = (patch: Partial<TeamFilters>) => {
     setFilters((current) => ({ ...current, ...patch }));
     pagination.setPage(1);
   };
   const clear = () => update(NO_FILTERS);
+  const activeFilters: ActiveFilter[] = [
+    ...(filters.status !== "all"
+      ? [{ key: "status", label: filters.status === "online" ? "Online" : "Ausentes", onRemove: () => update({ status: "all" }) }]
+      : []),
+    ...(filters.department
+      ? [{ key: "department", label: `Departamento: ${filters.department}`, onRemove: () => update({ department: "" }) }]
+      : []),
+    ...(filters.query.trim()
+      ? [{ key: "query", label: `Busca: “${filters.query.trim()}”`, onRemove: () => update({ query: "" }) }]
+      : []),
+  ];
 
   return (
     <Card>
@@ -67,9 +77,14 @@ export function AuthorsTable({ authors }: { authors: AuthorData[] }) {
           value={filters.department}
           onChange={(department) => update({ department })}
         />
-        {active && <ClearFiltersButton onClick={clear} />}
-        <FilterStatus count={filtered.length} total={authors.length} />
       </div>
+      <ActiveFilters
+        filters={activeFilters}
+        onClearAll={clear}
+        count={filtered.length}
+        total={authors.length}
+        noun="pessoas"
+      />
       {/* Focável para quem rola pelo teclado quando a tabela não cabe (WCAG 2.1.1). */}
       {filtered.length === 0 ? (
         <EmptyResults message="Nenhuma pessoa encontrada." onClear={clear} />

@@ -34,11 +34,25 @@ export async function syncConnection(connectionId: number) {
     const accounts = await provider.listAccounts(connection.itemId);
     let imported = 0;
 
-    for (const account of accounts) {
+    for (const { credit, ...account } of accounts) {
+      const valid = (d?: Date) => (d && !Number.isNaN(d.getTime()) ? d : null);
+      const data = {
+        type: account.type,
+        name: account.name,
+        number: account.number,
+        balanceCents: account.balanceCents,
+        brand: credit?.brand || null,
+        level: credit?.level || null,
+        creditLimitCents: credit?.creditLimitCents ?? null,
+        availableLimitCents: credit?.availableLimitCents ?? null,
+        billCloseDate: valid(credit?.billCloseDate),
+        billDueDate: valid(credit?.billDueDate),
+        minimumPaymentCents: credit?.minimumPaymentCents ?? null,
+      };
       const saved = await prisma.bankAccount.upsert({
         where: { externalId: account.externalId },
-        create: { ...account, connectionId },
-        update: { type: account.type, name: account.name, number: account.number, balanceCents: account.balanceCents },
+        create: { ...data, externalId: account.externalId, connectionId },
+        update: data,
       });
       const transactions = await provider.listTransactions(account, from);
       // Substitui a janela inteira: cobre transações novas, alteradas (pendente → lançada) e removidas.
@@ -55,6 +69,7 @@ export async function syncConnection(connectionId: number) {
         status: mapItemStatus(item.status, item.executionStatus),
         institutionName: item.institutionName,
         institutionColor: item.institutionColor,
+        institutionImageUrl: item.institutionImageUrl ?? null,
         consentExpiresAt: item.consentExpiresAt ?? null,
         lastSyncAt: new Date(),
       },

@@ -21,12 +21,24 @@ export const DEMO_INSTITUTIONS: DemoInstitution[] = [
   { id: "atlantico", name: "Banco Atlântico", color: "d4733d" },
 ];
 
+export interface CreditCardData {
+  brand: string;
+  level: string;
+  creditLimitCents: number;
+  availableLimitCents: number;
+  billCloseDate: Date;
+  billDueDate: Date;
+  minimumPaymentCents: number;
+}
+
 export interface DemoAccount {
   externalId: string;
   type: AccountType;
   name: string;
   number: string;
   balanceCents: number;
+  /** Só cartões de crédito. */
+  credit?: CreditCardData;
 }
 
 export interface DemoTransaction {
@@ -39,6 +51,8 @@ export interface DemoTransaction {
 
 const DAY = 86_400_000;
 const HISTORY_DAYS = 90;
+/** Dia de vencimento da fatura de demonstração; fecha 7 dias antes. */
+const BILL_DUE_DAY = 7;
 
 export function createDemoItemId(institutionId: string, now = Date.now(), random = Math.random) {
   const suffix = Math.floor(random() * 36 ** 6).toString(36).padStart(6, "0");
@@ -176,6 +190,13 @@ export function demoTransactions(itemId: string, accountType: AccountType, now =
   return out;
 }
 
+/** Próximo vencimento (dia 7) depois de `now`, ao meio-dia UTC. */
+function nextDueDate(now: Date) {
+  const due = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), BILL_DUE_DAY, 15));
+  if (due <= now) due.setUTCMonth(due.getUTCMonth() + 1);
+  return due;
+}
+
 export function demoAccounts(itemId: string, now = new Date()): DemoAccount[] {
   const r = rng(`${itemId}:accounts`);
   const digits = () => String(1000 + Math.floor(r() * 9000));
@@ -188,6 +209,11 @@ export function demoAccounts(itemId: string, now = new Date()): DemoAccount[] {
     .filter((t) => t.amountCents < 0 && (!lastPayment || t.date > lastPayment.date))
     .reduce((sum, t) => sum - t.amountCents, 0);
 
+  const brand = ["Visa", "Mastercard", "Elo"][Math.floor(r() * 3)];
+  const level = ["Gold", "Platinum", "Black"][Math.floor(r() * 3)];
+  const creditLimitCents = (15 + Math.floor(r() * 26)) * 1_000_00;
+  const billDueDate = nextDueDate(now);
+
   return [
     {
       externalId: `${itemId}:BANK`,
@@ -199,9 +225,18 @@ export function demoAccounts(itemId: string, now = new Date()): DemoAccount[] {
     {
       externalId: `${itemId}:CREDIT`,
       type: "CREDIT",
-      name: "Cartão de crédito",
+      name: `${brand} ${level}`,
       number: `•••• ${digits()}`,
       balanceCents: openBill,
+      credit: {
+        brand,
+        level,
+        creditLimitCents,
+        availableLimitCents: creditLimitCents - openBill,
+        billCloseDate: new Date(billDueDate.getTime() - 7 * DAY),
+        billDueDate,
+        minimumPaymentCents: Math.round(openBill * 0.15),
+      },
     },
   ];
 }

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
-import { ClearFiltersButton, EmptyResults, FilterStatus, SearchField, SelectField } from "@/components/ui/Filters";
+import { ActiveFilters, EmptyData, EmptyResults, SearchField, SelectField, type ActiveFilter } from "@/components/ui/Filters";
 import { Pagination, usePagination } from "@/components/ui/Pagination";
 import { SegmentedControl, type SegmentOption } from "@/components/ui/SegmentedControl";
 import { filterBankTransactions, uniqueSorted, type BankTransactionFilters, type TransactionType } from "@/lib/filters";
@@ -26,7 +26,6 @@ export function ImportedTransactions({ transactions }: { transactions: BankTrans
   const institutions = useMemo(() => uniqueSorted(transactions.map((t) => t.institutionName)), [transactions]);
   const filtered = useMemo(() => filterBankTransactions(transactions, filters), [transactions, filters]);
   const pagination = usePagination(filtered, PAGE_SIZE);
-  const active = filters.query !== "" || filters.type !== "all" || filters.category !== "" || filters.institution !== "";
 
   const inflow = filtered.filter((t) => t.amountCents > 0).reduce((sum, t) => sum + t.amountCents, 0);
   const outflow = filtered.filter((t) => t.amountCents < 0).reduce((sum, t) => sum - t.amountCents, 0);
@@ -36,6 +35,32 @@ export function ImportedTransactions({ transactions }: { transactions: BankTrans
     pagination.setPage(1);
   };
   const clear = () => update(NO_FILTERS);
+  const activeFilters: ActiveFilter[] = [
+    ...(filters.type !== "all"
+      ? [{ key: "type", label: filters.type === "in" ? "Entradas" : "Saídas", onRemove: () => update({ type: "all" }) }]
+      : []),
+    ...(filters.category
+      ? [{ key: "category", label: `Categoria: ${filters.category}`, onRemove: () => update({ category: "" }) }]
+      : []),
+    ...(filters.institution
+      ? [{ key: "institution", label: `Banco: ${filters.institution}`, onRemove: () => update({ institution: "" }) }]
+      : []),
+    ...(filters.query.trim()
+      ? [{ key: "query", label: `Busca: “${filters.query.trim()}”`, onRemove: () => update({ query: "" }) }]
+      : []),
+  ];
+
+  // Sem nenhuma transação ainda (ex.: banco concluindo a autorização): filtros não fazem sentido.
+  if (transactions.length === 0)
+    return (
+      <Card>
+        <CardHeader title="Transações importadas" subtitle="Lançamentos vindos dos bancos conectados" />
+        <EmptyData
+          title="Nenhuma transação importada ainda"
+          hint="Se o banco ainda está concluindo a autorização, use Sincronizar no card do banco em alguns instantes."
+        />
+      </Card>
+    );
 
   return (
     <Card>
@@ -68,9 +93,14 @@ export function ImportedTransactions({ transactions }: { transactions: BankTrans
             onChange={(institution) => update({ institution })}
           />
         )}
-        {active && <ClearFiltersButton onClick={clear} />}
-        <FilterStatus count={filtered.length} total={transactions.length} />
       </div>
+      <ActiveFilters
+        filters={activeFilters}
+        onClearAll={clear}
+        count={filtered.length}
+        total={transactions.length}
+        noun="transações"
+      />
 
       <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:max-w-md">
         <div className="fn-well rounded-lg px-3 py-2">

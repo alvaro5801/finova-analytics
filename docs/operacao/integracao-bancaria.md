@@ -49,7 +49,7 @@ sequenceDiagram
    PLUGGY_WEBHOOK_SECRET=<valor aleatório longo>
    PLUGGY_SANDBOX=true   # mostra o "Pluggy Bank" no widget; remover em produção
    ```
-3. **Widget:** já integrado (`react-pluggy-connect`, carregado só no navegador). No sandbox, escolha **Sandbox → Fluxo básico** no widget e entre com `user-ok` / `password-ok`. O nome exibido no topo do widget ("Demo usa a Pluggy…") é o nome do app no painel da Pluggy.
+3. **Widget:** já integrado com o SDK oficial (`pluggy-connect-sdk`), por um componente próprio ([`PluggyConnectWidget`](../../src/components/integrations/PluggyConnectWidget.tsx)) que cria o widget uma única vez e o destrói ao fechar. O `react-pluggy-connect` foi descartado: ele cria uma instância a cada montagem e nunca destrói a anterior; com a montagem dupla do React em desenvolvimento, nasciam dois widgets, e o login OAuth do MeuPluggy falhava ("opened too many login dialogs"). O cliente escolhe o banco **na lista do Finova** (`GET /connectors`, com os logos, só os conectores liberados na aplicação), e o widget abre direto nesse banco (`selectedConnectorId`), pulando a lista da Pluggy. No sandbox, escolha **Sandbox → Fluxo básico** no widget e entre com `user-ok` / `password-ok`. O nome exibido no topo do widget ("Demo usa a Pluggy…") é o nome do app no painel da Pluggy.
 4. **Webhook:** cadastre uma vez com `POST /webhooks` na Pluggy, informando `url: https://<domínio>/api/integrations/webhook`, `event: "all"` e `headers: { "x-finova-webhook-secret": "<PLUGGY_WEBHOOK_SECRET>" }`. A Pluggy não assina as chamadas; o cabeçalho secreto é a autenticação, e a rota responde 401 sem ele. Não use o `webhookUrl` por Item, porque ele não envia cabeçalhos.
 
 ## Regras de dados
@@ -60,6 +60,13 @@ sequenceDiagram
 - **Testes E2E:** o Playwright força `BANKING_PROVIDER=demo`, então a suíte não depende da Pluggy nem de rede.
 - **Sincronização:** a primeira importa até 1 ano. As seguintes substituem a janela desde a última sincronização menos 7 dias, cobrindo transações pendentes que mudaram.
 - **Status:** `UPDATED` → conectado · `UPDATING` → sincronizando · `LOGIN_ERROR`/`WAITING_USER_INPUT` ou consentimento revogado → precisa reconectar · demais → erro.
+
+## Para o cliente só escolher o banco e autorizar
+
+A Pluggy não some por completo: no Open Finance, só instituições autorizadas pelo Banco Central podem receber os dados, e é a Pluggy (ou um parceiro) que faz esse papel. A experiência fica assim: lista de bancos do Finova → tela curta da Pluggy (termos) → app do banco → volta ao Finova.
+
+- **Na Pluggy:** contrato de produção (remove o aviso "Aplicação demo" e libera os bancos reais, sem MeuPluggy) e personalização no painel (nome "Finova Analytics", logo, cores e quais bancos do Open Finance oferecer).
+- **No Finova:** `oauthRedirectUri` apontando para uma URL HTTPS do deploy (traz o cliente de volta do app do banco no celular; não pode ser localhost), mais os itens da seção abaixo.
 
 ## Antes de produção
 

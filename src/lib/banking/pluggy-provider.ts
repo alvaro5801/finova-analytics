@@ -4,7 +4,7 @@
  */
 import { cardExpenseIsPositive, maskAccountNumber, normalizeAmount, normalizeCardAmount } from "@/lib/banking/normalize";
 import type { AccountType } from "@/lib/banking/normalize";
-import type { BankingProvider, ProviderAccount, ProviderTransaction } from "@/lib/banking/provider";
+import type { BankingProvider, Institution, ProviderAccount, ProviderTransaction } from "@/lib/banking/provider";
 
 const BASE_URL = "https://api.pluggy.ai";
 /** A API key dura 2 h; renovamos com folga para não usar uma chave prestes a expirar. */
@@ -18,6 +18,20 @@ const CATEGORIES_TTL_MS = 24 * 3_600_000;
 
 let cachedKey: { value: string; expiresAt: number } | null = null;
 let cachedCategories: { byId: Map<string, string>; expiresAt: number } | null = null;
+let cachedInstitutions: { list: Institution[]; expiresAt: number } | null = null;
+const INSTITUTIONS_TTL_MS = 3_600_000;
+/** Tipos de conector oferecidos: contas de pessoa física e de empresa. */
+const BANK_TYPES = new Set(["PERSONAL_BANK", "BUSINESS_BANK"]);
+
+interface PluggyConnector {
+  id: number;
+  name: string;
+  type: string;
+  primaryColor?: string | null;
+  imageUrl?: string | null;
+  isSandbox?: boolean;
+  isOpenFinance?: boolean;
+}
 
 async function apiKey() {
   if (cachedKey && cachedKey.expiresAt > Date.now()) return cachedKey.value;
@@ -59,8 +73,10 @@ interface PluggyItem {
   status: string;
   executionStatus?: string;
   consentExpiresAt?: string | null;
-  connector: { name: string; primaryColor?: string };
+  connector: { name: string; primaryColor?: string; imageUrl?: string | null };
 }
+
+const hex = (color?: string | null) => (color ?? "9498a1").replace("#", "");
 
 interface PluggyAccount {
   id: string;
@@ -69,7 +85,23 @@ interface PluggyAccount {
   marketingName?: string | null;
   number?: string | null;
   balance: number;
+  creditData?: {
+    brand?: string | null;
+    level?: string | null;
+    creditLimit?: number | null;
+    availableCreditLimit?: number | null;
+    balanceCloseDate?: string | null;
+    balanceDueDate?: string | null;
+    minimumPayment?: number | null;
+  } | null;
 }
+
+/** "MASTERCARD" → "Mastercard", "BLACK" → "Black". */
+const titleCase = (text?: string | null) =>
+  (text ?? "").toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+const cents = (value?: number | null) => Math.round((value ?? 0) * 100);
+/** Datas de fatura vêm só com o dia; meio-dia UTC evita "voltar um dia" no fuso de Brasília. */
+const billDate = (day?: string | null) => (day ? new Date(`${day.slice(0, 10)}T15:00:00Z`) : new Date(NaN));
 
 interface PluggyTransaction {
   id: string;
@@ -83,6 +115,32 @@ interface PluggyTransaction {
 
 export const pluggyProvider: BankingProvider = {
   mode: "pluggy",
+
+  async listInstitutions() {
+    if (cachedInstitutions && cachedInstitutions.expiresAt > Date.now()) return cachedInstitutions.list;
+    // A API só devolve os conectores liberados para esta aplicação: em produção, os bancos reais.
+    const sandbox = process.env.PLUGGY_SANDBOX === "true" ? "&sandbox=true" : "";
+    const { results } = await pluggy<{ results: PluggyConnector[] }>(`/connectors?countries=BR${sandbox}`);
+    const list = results
+      .filter((c) => BANK_TYPES.has(c.type))
+      .map((c) => ({
+        id: String(c.id),
+        name: c.name,
+        color: hex(c.primaryColor),
+        imageUrl: c.imageUrl ?? null,
+        openFinance: !!c.isOpenFinance,
+        sandbox: !!c.isSandbox,
+      }))
+      // Bancos reais antes dos de teste; Open Finance primeiro; depois por nome.
+      .sort(
+        (a, b) =>
+          Number(a.sandbox) - Number(b.sandbox) ||
+          Number(b.openFinance) - Number(a.openFinance) ||
+          a.name.localeCompare(b.name, "pt-BR"),
+      );
+    cachedInstitutions = { list, expiresAt: Date.now() + INSTITUTIONS_TTL_MS };
+    return list;
+  },
 
   async createConnectToken(userId) {
     // `clientUserId` precisa ir dentro de `options`: na raiz a Pluggy ignora sem avisar.
@@ -98,7 +156,8 @@ export const pluggyProvider: BankingProvider = {
     return {
       id: item.id,
       institutionName: item.connector.name,
-      institutionColor: item.connector.primaryColor ?? "9498a1",
+      institutionColor: hex(item.connector.primaryColor),
+      institutionImageUrl: item.connector.imageUrl ?? null,
       status: item.status,
       executionStatus: item.executionStatus,
       consentExpiresAt: item.consentExpiresAt ? new Date(item.consentExpiresAt) : null,
@@ -107,14 +166,28 @@ export const pluggyProvider: BankingProvider = {
 
   async listAccounts(itemId): Promise<ProviderAccount[]> {
     const { results } = await pluggy<{ results: PluggyAccount[] }>(`/accounts?itemId=${encodeURIComponent(itemId)}`);
-    return results.map((account) => ({
-      externalId: account.id,
-      type: account.type,
-      name: account.marketingName || account.name,
-      number: maskAccountNumber(account.number),
-      // Cartão: o sinal do saldo não é documentado; guardamos a fatura como valor devido (positivo).
-      balanceCents: account.type === "CREDIT" ? Math.abs(Math.round(account.balance * 100)) : Math.round(account.balance * 100),
-    }));
+    return results.map((account) => {
+      const credit = account.type === "CREDIT" ? account.creditData : null;
+      return {
+        externalId: account.id,
+        type: account.type,
+        name: account.name || account.marketingName || "Conta",
+        number: maskAccountNumber(account.number),
+        // Cartão: o sinal do saldo varia; guardamos a fatura como valor devido (positivo).
+        balanceCents: account.type === "CREDIT" ? Math.abs(cents(account.balance)) : cents(account.balance),
+        credit: credit
+          ? {
+              brand: titleCase(credit.brand),
+              level: titleCase(credit.level),
+              creditLimitCents: cents(credit.creditLimit),
+              availableLimitCents: cents(credit.availableCreditLimit),
+              billCloseDate: billDate(credit.balanceCloseDate),
+              billDueDate: billDate(credit.balanceDueDate),
+              minimumPaymentCents: cents(credit.minimumPayment),
+            }
+          : undefined,
+      };
+    });
   },
 
   async listTransactions(account, from): Promise<ProviderTransaction[]> {

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { demoAccounts, demoTransactions, parseDemoItemId } from "@/lib/banking/demo-data";
+import { DEMO_INSTITUTIONS, demoAccounts, demoTransactions, parseDemoItemId } from "@/lib/banking/demo-data";
 import type { BankingProvider } from "@/lib/banking/provider";
 
 const TOKEN_TTL_MS = 30 * 60_000;
@@ -15,6 +15,10 @@ const itemIdOf = (accountExternalId: string) => accountExternalId.split(":")[0];
 
 export const demoProvider: BankingProvider = {
   mode: "demo",
+
+  async listInstitutions() {
+    return DEMO_INSTITUTIONS.map((i) => ({ ...i, imageUrl: null, openFinance: true, sandbox: false }));
+  },
 
   async createConnectToken() {
     return `demo_ct_${(Date.now() + TOKEN_TTL_MS).toString(36)}_${randomUUID()}`;

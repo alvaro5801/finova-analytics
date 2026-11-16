@@ -8,9 +8,9 @@ import { CardHeader } from "@/components/ui/CardHeader";
 import { Pagination, usePagination } from "@/components/ui/Pagination";
 import { SegmentedControl, type SegmentOption } from "@/components/ui/SegmentedControl";
 import {
-  ClearFiltersButton,
+  ActiveFilters,
   EmptyResults,
-  FilterStatus,
+  type ActiveFilter,
   SearchField,
   SelectField,
 } from "@/components/ui/Filters";
@@ -35,7 +35,6 @@ export function RecentTransactionsCard({ orders }: { orders: OrderEventData[] })
   const categories = useMemo(() => uniqueSorted(orders.map((o) => o.description)), [orders]);
   const filtered = useMemo(() => filterTransactions(orders, filters), [orders, filters]);
   const pagination = usePagination(filtered);
-  const active = filters.type !== "all" || filters.query !== "" || filters.category !== "";
 
   // Os totais acompanham o filtro: "quanto saiu com Pessoal" vira leitura direta.
   const inflow = filtered.filter((o) => o.amountCents > 0).reduce((sum, o) => sum + o.amountCents, 0);
@@ -46,6 +45,17 @@ export function RecentTransactionsCard({ orders }: { orders: OrderEventData[] })
     pagination.setPage(1);
   };
   const clear = () => update(NO_FILTERS);
+  const activeFilters: ActiveFilter[] = [
+    ...(filters.type !== "all"
+      ? [{ key: "type", label: filters.type === "in" ? "Entradas" : "Saídas", onRemove: () => update({ type: "all" }) }]
+      : []),
+    ...(filters.category
+      ? [{ key: "category", label: `Categoria: ${filters.category}`, onRemove: () => update({ category: "" }) }]
+      : []),
+    ...(filters.query.trim()
+      ? [{ key: "query", label: `Busca: “${filters.query.trim()}”`, onRemove: () => update({ query: "" }) }]
+      : []),
+  ];
 
   return (
     <Card className="flex h-full flex-col">
@@ -71,10 +81,15 @@ export function RecentTransactionsCard({ orders }: { orders: OrderEventData[] })
             value={filters.category}
             onChange={(category) => update({ category })}
           />
-          {active && <ClearFiltersButton onClick={clear} />}
         </div>
-        <FilterStatus count={filtered.length} total={orders.length} />
       </div>
+      <ActiveFilters
+        filters={activeFilters}
+        onClearAll={clear}
+        count={filtered.length}
+        total={orders.length}
+        noun="transações"
+      />
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
         <div className="fn-well rounded-lg px-3 py-2">

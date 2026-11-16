@@ -13,10 +13,11 @@ interface ModalProps {
   title: string;
   description?: string;
   children: React.ReactNode;
-  className?: string;
+  /** "lg" para conteúdo largo, como a prévia de um documento. */
+  size?: "md" | "lg";
 }
 
-function ModalPanel({ onClose, title, description, children, className }: Omit<ModalProps, "open">) {
+function ModalPanel({ onClose, title, description, children, size = "md" }: Omit<ModalProps, "open">) {
   const id = useId();
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -59,8 +60,8 @@ function ModalPanel({ onClose, title, description, children, className }: Omit<M
         exit={{ opacity: 0, y: 16, scale: 0.98 }}
         transition={{ duration: motionTokens.base, ease: motionTokens.ease }}
         className={clsx(
-          "fn-card fixed left-1/2 top-1/2 z-[60] max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl p-6",
-          className,
+          "fn-card fixed left-1/2 top-1/2 z-[60] max-h-[calc(100dvh-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl p-6",
+          size === "lg" ? "w-[min(40rem,calc(100vw-2rem))]" : "w-[min(28rem,calc(100vw-2rem))]",
         )}
       >
         <div className="flex items-start justify-between gap-3">

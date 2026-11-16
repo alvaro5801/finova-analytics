@@ -54,3 +54,21 @@ describe("contas de demonstração", () => {
     assert.ok(accounts[1].balanceCents >= 0, "fatura em aberto é um valor devido, não negativo");
   });
 });
+
+describe("cartão de demonstração", () => {
+  test("traz bandeira, limite, fatura, fechamento, vencimento e pagamento mínimo coerentes", () => {
+    const card = demoAccounts(itemId, now).find((a) => a.type === "CREDIT")!;
+    assert.ok(card.credit, "cartão precisa dos dados de crédito");
+    const c = card.credit!;
+    assert.ok(["Visa", "Mastercard", "Elo"].includes(c.brand));
+    assert.ok(c.level.length > 0);
+    assert.equal(c.availableLimitCents, c.creditLimitCents - card.balanceCents);
+    assert.ok(c.billDueDate > now, "vencimento no futuro");
+    assert.ok(c.billCloseDate < c.billDueDate, "fecha antes de vencer");
+    assert.equal(c.minimumPaymentCents, Math.round(card.balanceCents * 0.15));
+  });
+
+  test("conta corrente não tem dados de crédito", () => {
+    assert.equal(demoAccounts(itemId, now).find((a) => a.type === "BANK")!.credit, undefined);
+  });
+});
